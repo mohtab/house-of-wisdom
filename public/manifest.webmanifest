@@ -1,0 +1,9 @@
+{
+  "name": "House of Wisdom | بيت الحكمة",
+  "short_name": "House of Wisdom",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#efe8d4",
+  "theme_color": "#efe8d4",
+  "description": "Rebuild a House of Knowledge through study, research and historical Chronicles."
+}
