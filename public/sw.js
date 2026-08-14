@@ -1,5 +1,14 @@
-const CACHE = 'house-of-wisdom-v02';
-const SHELL = ['/', '/manifest.webmanifest', '/favicon.svg'];
+const CACHE = 'house-of-wisdom-v03';
+const SHELL = [
+  '/',
+  '/manifest.webmanifest',
+  '/favicon.svg',
+  '/assets/v03/opening-comic.png',
+  '/assets/v03/house-ruin.png',
+  '/assets/v03/house-desk-restored.png',
+  '/assets/v03/researcher.png',
+  '/assets/v03/al-jahiz-ghost.png',
+];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)));
   self.skipWaiting();

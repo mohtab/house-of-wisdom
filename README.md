@@ -1,8 +1,8 @@
 # House of Wisdom | بيت الحكمة
 
-House of Wisdom is a browser-first idle game about restoring a neglected House of Knowledge through study, research, and historically grounded Chronicles.
+House of Wisdom is a browser-first restoration mystery set in an alternate-history Abbasid Baghdad. A nameless researcher enters a ruined House, finds a torn manuscript and worn hammer, and begins restoring meaning and place together.
 
-Version 0.2 is a polished first-session vertical slice. It begins with one damaged folio and ends with Al-Kindi’s Method of Analysis, a restored Scriptorium, and a clear explanation of offline work.
+Version 0.3, **The First Word**, is a polished 10–15 minute prologue. It introduces the unidentified ghost of Al-Jahiz, Arabic Language and Literature as the first skill tree, a small timber-and-stone salvage loop, the Keeper’s Desk restoration, and Ignorance as the first environmental Shadow.
 
 ## Play locally
 
@@ -22,36 +22,20 @@ npm run build
 npm run preview
 ```
 
-The React + TypeScript application is the only game implementation. The former standalone HTML prototype was removed in v0.2 so timing, balance, saves, and content cannot diverge.
+## The First Word
 
-## First-session slice
+- Arabic-first four-panel opening comic with complete English support
+- 16-bit room art, researcher sprite, Al-Jahiz ghost, and Najdi-inspired interface patterns
+- Fragmented dialogue that becomes understandable through the Language tree
+- Four opening Language insights: letters, roots, grammar, and eloquence
+- Al-Jahiz identity reveal with progressively restored dialogue and dry humour
+- Timber and stone salvage using the real-time auto-repeat activity system
+- One visible restoration: the Keeper’s Desk
+- Ignorance introduced through the environment rather than combat
+- Versioned local save, v0.1/v0.2 migration, and offline progression capped at 8 hours
+- Responsive desktop, tablet, mobile, RTL, reduced-motion, and keyboard-focus presentation
 
-- Progressive opening: a neglected room, one manuscript, and one clear action
-- Translation and Mathematics activities with smooth timestamp-driven auto-repeat
-- Knowledge, discipline XP, levels, and visible next-level progress
-- A compact connected research path with one exclusive first-priority choice
-- Four visible House stages: neglected room, restored desk, improving library, restored Scriptorium
-- Al-Kindi’s Cipher as a forgiving frequency-analysis interaction
-- Permanent Method of Analysis reward: +10% Knowledge from every discipline
-- Local versioned save, v0.1 save migration, and timestamp-based offline production capped at 8 hours
-- English and Arabic UI with persistent progress and RTL layout
-- Responsive desktop, tablet, and 390px mobile layouts
-- Astronomy and Al-Battani shown only as future paths
-
-## Verified pacing
-
-The deterministic fresh-save simulation currently reaches:
-
-| Milestone | Simulated active time |
-| --- | ---: |
-| First reward | 0:06 |
-| Restore the desk | 3.2 minutes |
-| Unlock Mathematics | 8.4 minutes |
-| First priority choice | 12.2 minutes |
-| Discover and complete Al-Kindi | 27.5 minutes plus player interaction |
-| Restore the Scriptorium | 37.9 minutes |
-
-These are playtest targets, not guarantees. A player who deliberately selects lower-output activities will take longer.
+The previous Al-Kindi/Mathematics slice remains useful design history but is no longer the playable opening.
 
 ## Validation
 
@@ -62,20 +46,20 @@ npm run test:e2e
 npm run build
 ```
 
-The logic suite covers duration, rewards, auto-repeat, XP and levels, research, modifiers, offline time and its cap, duplicate prevention, saves, and Al-Kindi’s permanent reward. The browser suite covers the real six-second clock across rerenders and browser-tab switching, the research choice, Chronicle interaction, console errors, English/Arabic switching, RTL, and desktop/tablet/mobile layouts.
+The deterministic playthrough guards the complete prologue against exceeding 15 minutes. Unit tests cover rewards, real elapsed time, auto-repeat, skill dependencies, resource spending, save migration, and offline limits. Browser tests cover the Arabic-first comic, the six-second real-time loop, Al-Jahiz reveal, Keeper’s Desk restoration, Ignorance reveal, English/Arabic switching, RTL, and desktop/tablet/mobile layouts.
 
-## Product rule
+## Scope boundary
 
-Do not expand the game because the ideas are exciting. Expand only after this slice is enjoyable enough that players return and ask for more.
+Deliberately deferred from v0.3:
 
-## Deliberately deferred
+- full market economy and mining
+- free city exploration
+- complete crafting and Architecture trees
+- combat or humanoid Shadow forms
+- Astronomy, Al-Battani, and the revised Al-Kindi chapter
+- accounts, cloud saves, multiplayer, monetization, achievements, and daily rewards
 
-- Al-Battani’s complete Chronicle and an active Astronomy loop
-- Optics and Ibn al-Haytham
-- other disciplines, expeditions, and recruitable scholars
-- accounts, backend, cloud saves, multiplayer, monetization, achievements, and daily rewards
-
-See [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md), [docs/FIRST_3_HOURS.md](docs/FIRST_3_HOURS.md), and [docs/PLAYTEST.md](docs/PLAYTEST.md) for the authoritative slice and test notes.
+See [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md), [docs/NARRATIVE_AND_ART_DIRECTION.md](docs/NARRATIVE_AND_ART_DIRECTION.md), [docs/ROADMAP.md](docs/ROADMAP.md), and [docs/PLAYTEST.md](docs/PLAYTEST.md).
 
 ## License
 

@@ -4,47 +4,60 @@ import {
   OFFLINE_CAP_MS,
   activityTiming,
   advanceGame,
-  beginKindi,
-  buyResearch,
-  chooseKindiPlaintext,
-  chooseKindiSubstitution,
-  chooseKindiSymbol,
-  compareKindiFrequency,
+  buyLanguageSkill,
+  canRepairDesk,
   createInitialState,
-  hasResearch,
+  deskRequirements,
+  ghostDialogue,
+  hasItem,
+  hasSkill,
   knowledgeMultiplier,
+  languageSkills,
   levelForXp,
   loadGame,
-  researchAvailable,
-  researchNodes,
+  objective,
+  repairKeeperDesk,
   selectActivity,
   serializeGame,
+  skillAvailable,
   startGame,
 } from '../src/game.ts';
 
 function started(now = 0) {
-  return startGame(createInitialState(now), now);
+  return startGame(createInitialState(now, 'en'), now);
 }
 
-function node(id: string) {
-  return researchNodes.find((candidate) => candidate.id === id)!;
+function skill(id: string) {
+  return languageSkills.find((candidate) => candidate.id === id)!;
 }
 
-test('a displayed six-second activity completes at six real seconds', () => {
+function literateState(now = 0) {
+  const state = started(now);
+  state.knowledge = 1_000;
+  state.xp.language = 105;
+  return ['first-letter', 'word-roots', 'grammar', 'eloquence']
+    .reduce((current, id) => buyLanguageSkill(current, id, now), state);
+}
+
+test('Arabic is the primary language for a completely new journey', () => {
+  assert.equal(createInitialState(0).language, 'ar');
+});
+
+test('the displayed six-second activity completes at six real seconds', () => {
   const state = started(1_000);
   const before = advanceGame(state, 6_999).state;
   assert.equal(before.knowledge, 0);
-  assert.equal(before.xp.translation, 0);
+  assert.equal(before.xp.language, 0);
   assert.equal(activityTiming(before, 6_999)?.remainingMs, 1);
 
   const completed = advanceGame(before, 7_000);
   assert.equal(completed.summary.completions, 1);
   assert.equal(completed.state.knowledge, 1);
-  assert.equal(completed.state.xp.translation, 4);
+  assert.equal(completed.state.xp.language, 4);
   assert.equal(completed.state.activityProgressMs, 0);
 });
 
-test('completion awards the configured Knowledge and XP exactly once', () => {
+test('completion rewards are granted exactly once', () => {
   const once = advanceGame(started(0), 6_000);
   assert.deepEqual(
     { knowledge: once.summary.knowledge, xp: once.summary.xp, repetitions: once.summary.completions },
@@ -53,58 +66,94 @@ test('completion awards the configured Knowledge and XP exactly once', () => {
   const duplicateAttempt = advanceGame(once.state, 6_000);
   assert.equal(duplicateAttempt.summary.completions, 0);
   assert.equal(duplicateAttempt.state.knowledge, 1);
-  assert.equal(duplicateAttempt.state.xp.translation, 4);
+  assert.equal(duplicateAttempt.state.xp.language, 4);
 });
 
-test('auto-repeat processes every full cycle and preserves the remainder', () => {
+test('auto-repeat processes every complete cycle and preserves the remainder', () => {
   const result = advanceGame(started(0), 18_250);
   assert.equal(result.summary.completions, 3);
   assert.equal(result.state.knowledge, 3);
-  assert.equal(result.state.xp.translation, 12);
+  assert.equal(result.state.xp.language, 12);
   assert.equal(result.state.activityProgressMs, 250);
 });
 
-test('XP accumulation crosses deterministic level thresholds', () => {
+test('Language XP crosses deterministic level thresholds', () => {
   assert.equal(levelForXp(0), 1);
-  assert.equal(levelForXp(19), 1);
-  assert.equal(levelForXp(20), 2);
-  assert.equal(levelForXp(54), 2);
-  assert.equal(levelForXp(55), 3);
-  assert.equal(levelForXp(175), 5);
+  assert.equal(levelForXp(7), 1);
+  assert.equal(levelForXp(8), 2);
+  assert.equal(levelForXp(27), 2);
+  assert.equal(levelForXp(28), 3);
+  assert.equal(levelForXp(105), 5);
 });
 
-test('research requirements gate the path and the first priority choice', () => {
-  const state = createInitialState(0);
-  assert.equal(researchAvailable(state, node('desk')), true);
-  assert.equal(researchAvailable(state, node('mathematics')), false);
-
-  state.knowledge = 1_000;
-  const desk = buyResearch(state, 'desk', 0);
-  const math = buyResearch(desk, 'mathematics', 0);
-  const preserve = buyResearch(math, 'preserve', 0);
-  assert.equal(hasResearch(preserve, 'preserve'), true);
-  assert.equal(researchAvailable(preserve, node('follow')), false);
-  assert.equal(researchAvailable(preserve, node('language')), false, 'levels still gate Al-Kindi');
-});
-
-test('research purchases spend Knowledge and cannot be bought twice', () => {
-  const state = createInitialState(0);
-  state.knowledge = 45;
-  const purchased = buyResearch(state, 'desk', 0);
-  assert.equal(purchased.knowledge, 5);
-  assert.deepEqual(purchased.research, ['desk']);
-  const duplicate = buyResearch(purchased, 'desk', 0);
-  assert.equal(duplicate.knowledge, 5);
-  assert.deepEqual(duplicate.research, ['desk']);
-});
-
-test('Knowledge modifiers compose consistently online and in batches', () => {
+test('the Language tree requires both level and prior understanding', () => {
   const state = started(0);
-  state.research.push('desk', 'preserve');
-  assert.equal(knowledgeMultiplier(state, 'translation'), 1.2);
+  state.knowledge = 100;
+  state.xp.language = 8;
+  assert.equal(skillAvailable(state, skill('first-letter')), true);
+  assert.equal(skillAvailable(state, skill('word-roots')), false);
+
+  const first = buyLanguageSkill(state, 'first-letter', 0);
+  assert.equal(hasSkill(first, 'first-letter'), true);
+  assert.equal(skillAvailable(first, skill('word-roots')), false, 'level three still gates Word Roots');
+  first.xp.language = 28;
+  assert.equal(skillAvailable(first, skill('word-roots')), true);
+});
+
+test('skill purchases spend Knowledge and cannot be bought twice', () => {
+  const state = started(0);
+  state.knowledge = 8;
+  state.xp.language = 8;
+  const purchased = buyLanguageSkill(state, 'first-letter', 0);
+  assert.equal(purchased.knowledge, 0);
+  assert.deepEqual(purchased.skills, ['first-letter']);
+  const duplicate = buyLanguageSkill(purchased, 'first-letter', 0);
+  assert.equal(duplicate.knowledge, 0);
+  assert.deepEqual(duplicate.skills, ['first-letter']);
+});
+
+test('Eloquence reveals Al-Jahiz only after the full Language path', () => {
+  const state = literateState(0);
+  assert.equal(state.ghostIdentityRevealed, true);
+  assert.equal(hasItem(state, 'al-jahiz-signature'), true);
+  assert.match(ghostDialogue(state, 'en')!.text, /Al-Jahiz/);
+  assert.match(ghostDialogue(state, 'ar')!.speaker, /الجاحظ/);
+});
+
+test('salvage activities award physical materials through the same timestamp clock', () => {
+  const state = literateState(0);
+  const selected = selectActivity(state, 'salvage-timber', 0);
+  const result = advanceGame(selected, 40_000);
+  assert.equal(result.summary.completions, 5);
+  assert.equal(result.summary.timber, 5);
+  assert.equal(result.state.materials.timber, 5);
+  assert.equal(result.state.xp.architecture, 10);
+});
+
+test('the Keeper’s Desk consumes requirements and completes the prologue once', () => {
+  const state = literateState(0);
+  state.knowledge = deskRequirements.knowledge;
+  state.materials = { timber: deskRequirements.timber, stone: deskRequirements.stone };
+  assert.equal(canRepairDesk(state), true);
+  const repaired = repairKeeperDesk(state, 0);
+  assert.equal(repaired.knowledge, 0);
+  assert.deepEqual(repaired.materials, { timber: 0, stone: 0 });
+  assert.equal(repaired.deskRepaired, true);
+  assert.equal(repaired.ignoranceRevealed, true);
+  assert.equal(repaired.prologueComplete, true);
+  assert.equal(repaired.activeActivityId, 'study-eloquence');
+  assert.equal(objective(repaired, 'en'), 'Discover why the House was silenced');
+  assert.equal(hasItem(repaired, 'keeper-desk'), true);
+  assert.deepEqual(repairKeeperDesk(repaired, 0), repaired);
+});
+
+test('the restored desk modifier composes consistently online and in a batch', () => {
+  const state = started(0);
+  state.deskRepaired = true;
+  assert.equal(knowledgeMultiplier(state, 'language'), 1.1);
   const batch = advanceGame(state, 60_000);
   assert.equal(batch.summary.completions, 10);
-  assert.equal(batch.state.knowledge, 12);
+  assert.equal(batch.state.knowledge, 11);
 
   let incremental = state;
   for (let time = 6_000; time <= 60_000; time += 6_000) incremental = advanceGame(incremental, time).state;
@@ -121,21 +170,24 @@ test('offline elapsed time uses timestamps and caps production at eight hours', 
 });
 
 test('switching activities reconciles elapsed work before starting a new clock', () => {
-  const state = started(0);
-  state.research.push('mathematics');
-  const switched = selectActivity(state, 'numerals', 6_000);
-  assert.equal(switched.knowledge, 1);
-  assert.equal(switched.xp.translation, 4);
-  assert.equal(switched.activeActivityId, 'numerals');
+  const state = literateState(0);
+  state.activeActivityId = 'trace-letters';
+  state.activityProgressMs = 0;
+  state.lastUpdatedAt = 0;
+  const switched = selectActivity(state, 'salvage-timber', 6_000);
+  assert.equal(switched.knowledge, 883);
+  assert.equal(switched.xp.language, 109);
+  assert.equal(switched.activeActivityId, 'salvage-timber');
   assert.equal(switched.activityProgressMs, 0);
-  assert.equal(advanceGame(switched, 13_000).summary.completions, 1);
+  assert.equal(advanceGame(switched, 14_000).summary.completions, 1);
 });
 
-test('save and load preserve state and reconcile only unsimulated time', () => {
+test('save and load preserve v0.3 state and reconcile only unsimulated time', () => {
   const progressed = advanceGame(started(1_000), 7_000).state;
   const raw = serializeGame(progressed);
   const loaded = loadGame(raw, 10_000);
   assert.equal(loaded.isNew, false);
+  assert.equal(loaded.migrated, false);
   assert.equal(loaded.state.knowledge, 1);
   assert.equal(loaded.state.activityProgressMs, 3_000);
   assert.equal(loaded.state.lastUpdatedAt, 10_000);
@@ -144,40 +196,22 @@ test('save and load preserve state and reconcile only unsimulated time', () => {
   assert.equal(secondLoad.summary?.completions, 0);
 });
 
-test('invalid saves fall back safely to a fresh state', () => {
+test('invalid saves fall back safely to a fresh Arabic journey', () => {
   const loaded = loadGame('{not-json', 25_000);
   assert.equal(loaded.isNew, true);
+  assert.equal(loaded.state.language, 'ar');
   assert.equal(loaded.state.knowledge, 0);
   assert.equal(loaded.state.activeActivityId, null);
   assert.equal(loaded.state.lastUpdatedAt, 25_000);
 });
 
-test('Al-Kindi interaction grants the permanent Method of Analysis reward', () => {
-  const state = started(0);
-  state.knowledge = 1_000;
-  state.xp.translation = 105;
-  state.xp.mathematics = 175;
-  state.research.push('desk', 'mathematics', 'preserve');
-  const unlocked = buyResearch(state, 'language', 0);
-  const begun = beginKindi(unlocked, 0);
-  const found = chooseKindiSymbol(begun, '◆', 0);
-  const compared = compareKindiFrequency(found, 0);
-  const substituted = chooseKindiSubstitution(compared, 'common', 0);
-  const completed = chooseKindiPlaintext(substituted, 'correct', 0);
-  assert.equal(completed.kindi.complete, true);
-  assert.equal(completed.kindi.phase, 'complete');
-  assert.equal(completed.manuscripts.includes('method-of-analysis'), true);
-  assert.equal(knowledgeMultiplier(completed, 'translation'), 1.3);
-  assert.equal(knowledgeMultiplier(completed, 'mathematics'), 1.1);
-});
-
-test('wrong Chronicle choices are forgiving and never create a fail state', () => {
-  const state = createInitialState(0);
-  state.kindi = { unlocked: true, phase: 'frequency', complete: false, selectedSymbol: null, substitution: null, attempts: 0 };
-  const wrongSymbol = chooseKindiSymbol(state, '○', 0);
-  assert.equal(wrongSymbol.kindi.phase, 'frequency');
-  const rightSymbol = chooseKindiSymbol(wrongSymbol, '◆', 0);
-  const compare = compareKindiFrequency(rightSymbol, 0);
-  const wrongLetter = chooseKindiSubstitution(compare, 'rare', 0);
-  assert.equal(wrongLetter.kindi.phase, 'substitution');
+test('v0.2 saves preserve language but restart the redesigned prologue', () => {
+  const raw = JSON.stringify({ version: 2, language: 'en', knowledge: 999, started: true });
+  const loaded = loadGame(raw, 50_000);
+  assert.equal(loaded.migrated, true);
+  assert.equal(loaded.fromVersion, 2);
+  assert.equal(loaded.state.language, 'en');
+  assert.equal(loaded.state.knowledge, 0);
+  assert.equal(loaded.state.started, false);
+  assert.deepEqual(loaded.state.inventory, ['torn-manuscript', 'worn-hammer']);
 });
