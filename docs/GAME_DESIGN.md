@@ -1,4 +1,4 @@
-# Game Design v0.3 — The First Word
+# Game Design v0.3.1 — The First Word
 
 House of Wisdom is a browser-first idle restoration mystery set in an alternate-history Abbasid Baghdad. Version 0.3 tests whether a stronger conflict, character mystery, and distinct visual identity make the first 10–15 minutes compelling.
 
@@ -6,11 +6,11 @@ House of Wisdom is a browser-first idle restoration mystery set in an alternate-
 
 The player is a timeless, nameless researcher seeking knowledge. They restore a visible institution by recovering meaning, applying disciplines, and rebuilding spaces that let knowledge serve people again.
 
-The player does not fight conventional monsters. The antagonists are environmental Shadows—Ignorance, Greed, Famine, Fear, and Forgetting—that damage language, trust, resources, institutions, and memory.
+The player does not fight conventional monsters. Baghdad is trapped under permanent supernatural Darkness with no day/night cycle. Its environmental Shadows—Ignorance, Greed, Famine, Fear, and Forgetting—damage language, trust, resources, institutions, and memory.
 
 ## First-session promise
 
-Arrive at the silent House → find manuscript and hammer → encounter an incomprehensible ghost → restore his speech through Language → reveal Al-Jahiz → salvage purposeful materials → repair the Keeper’s Desk → see the district answer with light → discover that Ignorance deliberately silenced the House.
+Read the narrated arrival → follow the in-room guide to the manuscript → turn Work into Knowledge → restore speech through Language → reveal Al-Jahiz → salvage purposeful materials → repair the Keeper’s Desk → move city Darkness from 100% to 99% → discover that circulating knowledge weakens Ignorance.
 
 The desired emotional rhythm is mystery → comprehension → companionship → useful work → visible hope → larger threat.
 
@@ -28,7 +28,9 @@ Decode a message → understand a need → study the required discipline → obt
 - one repair recipe: the Keeper’s Desk
 - progressively restored ghost dialogue and Al-Jahiz identity reveal
 - one visible room restoration and district-light response
+- one citywide Darkness meter driven only by permanent story milestones
 - Ignorance as an environmental effect and narrative antagonist
+- House / Work / Knowledge navigation, a Satchel drawer, and story memories inside the House
 - versioned local save with v0.1/v0.2 migration
 - timestamp-based offline work capped at eight hours
 - Arabic-first presentation, full English support, and RTL layout
@@ -37,7 +39,8 @@ Decode a message → understand a need → study the required discipline → obt
 
 Playable now:
 
-- four-panel arrival comic
+- narrated four-panel arrival comic
+- speech-bubble tutorial through the first immediately affordable insight
 - Language and Literature: letters, word roots, grammar, and eloquence
 - four Language study activities
 - timber and stone salvage
@@ -53,7 +56,7 @@ Visible but not playable:
 
 Deferred:
 
-- full market, mining, expeditions, and free city exploration
+- manuscript copying/trade, full market, mining, expeditions, and free city exploration
 - complete crafting and Architecture trees
 - humanoid Shadows, combat, or battle system
 - revised Al-Kindi chapter and Astronomy

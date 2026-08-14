@@ -5,11 +5,13 @@ import {
   buyLanguageSkill,
   canRepairDesk,
   createInitialState,
+  darknessPercent,
   deskRequirements,
   hasSkill,
   languageSkills,
   levelForXp,
   repairKeeperDesk,
+  inspectManuscript,
   selectActivity,
   skillAvailable,
   startGame,
@@ -26,7 +28,7 @@ type Milestone = {
 };
 
 let now = 0;
-let state = startGame(createInitialState(now, 'en'), now);
+let state = inspectManuscript(startGame(createInitialState(now, 'en'), now), now);
 const milestones: Milestone[] = [];
 
 function record(name: string) {
@@ -70,7 +72,8 @@ function waitForSkill(id: string, deadlineMinutes: number) {
 }
 
 advanceSeconds(6);
-assert.equal(state.knowledge, 1);
+assert.equal(state.knowledge, 8);
+assert.equal(state.tutorialStep, 'first-insight');
 record('first reward');
 
 waitForSkill('first-letter', 1.5);
@@ -102,6 +105,8 @@ record('Keeper desk repaired');
 
 assert.equal(state.prologueComplete, true);
 assert.equal(state.ignoranceRevealed, true);
+assert.equal(state.tutorialStep, 'complete');
+assert.equal(darknessPercent(state), 99);
 assert.ok(activities.every((activity) => activity.durationMs >= 6_000));
 assert.ok(milestones.find((item) => item.name === 'first-letter')!.minute <= 1.5);
 assert.ok(milestones.find((item) => item.name === 'word-roots')!.minute <= 4);

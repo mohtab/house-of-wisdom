@@ -14,7 +14,7 @@ The implemented build validates the technical foundation:
 
 Initial playtest feedback found that the build improved clarity and reliability but lacked sufficient conflict, dramatic purpose and a distinctive visual identity. v0.2 remains useful as a mechanics prototype; its current narrative and visual layer are not the intended final direction.
 
-## v0.3 — The First Word — implemented, awaiting playtests
+## v0.3 — The First Word — implemented and playtested
 
 Goal: prove the revised narrative and art direction in the first 10–15 minutes before rebuilding the full session.
 
@@ -26,7 +26,7 @@ Goal: prove the revised narrative and art direction in the first 10–15 minutes
 - approve the researcher, unidentified Al-Jahiz, ruined hall, Ignorance effects and four-panel comic
 - test Arabic readability inside the pixel-art interface
 
-The approved concept set has been translated into a playable room, opening comic, researcher, ghost, Language tree, restoration interface, and environmental Ignorance treatment. Automated verification covers Arabic/English presentation; the 5–10 player success gate below is still required.
+The approved concept set was translated into a playable room, opening comic, researcher, ghost, Language tree, restoration interface, and environmental Ignorance treatment. Initial feedback was positive on atmosphere and visual improvement, but found the tab structure confusing and the narrative/tutorial too implicit.
 
 ### Playable scope
 
@@ -53,7 +53,7 @@ The approved concept set has been translated into a playable room, opening comic
 - battle or combat system
 - Astronomy and Al-Battani expansion
 
-### Success gate
+### Original success gate
 
 Test with 5–10 new players and evaluate whether they:
 
@@ -65,15 +65,34 @@ Test with 5–10 new players and evaluate whether they:
 - enjoy the first repair and want to restore another part of the House
 - recognize the visual identity without explanation
 
+## v0.3.1 — The Long Darkness — implemented, awaiting focused playtests
+
+Goal: make the conflict, quest, and first actions unmistakable without expanding the prologue’s system scope.
+
+- establish that Baghdad has no dawn or day/night cycle; the supernatural Darkness never lifts on its own
+- narrate all four comic panels without naming Al-Jahiz or Ignorance early
+- guide the player in-room through manuscript inspection, the first real-time reward, and the first Language insight
+- give the first discovery enough Knowledge and Language XP to unlock that insight immediately
+- reduce primary navigation to House, Work, and Knowledge
+- move inventory into the Satchel and merge the Journal into the House as What the House Remembers
+- show a permanent Darkness percentage driven by story milestones, from 100% to 99% after the Keeper’s Desk
+- preserve v0.3 progress and let returning players replay the opening without forcing the tutorial
+- revise comic and room art to remove moons, stars, dusk, and ordinary city lights
+
+### v0.3.1 validation gate
+
+Test whether new players can state, without prompting: “I am restoring light to Baghdad; work produces Knowledge; Knowledge lets me understand the ghost; restoring the House pushes back the Darkness.” Also test whether they can reach The First Letter without opening irrelevant screens or asking where to go next.
+
 ## v0.4 — The House Returns
 
-Only after the v0.3 gate passes:
+Only after the v0.3.1 gate passes:
 
 - expand Mathematics into Architecture
 - add a bounded crafting tree and workshop
 - restore additional rooms and building stages
 - show residents, craftspeople and scholars returning to the district
-- introduce the market as a civic system
+- introduce manuscript copying: originals remain archived while copies can be traded or donated
+- introduce the market as a civic system, with circulation—not hoarding—as its restoration purpose
 - make Greed the next environmental antagonist
 - reintroduce Al-Kindi through a revised Chronicle structure
 
@@ -96,6 +115,7 @@ Only after the restoration economy is enjoyable:
 - Optics and Ibn al-Haytham
 - additional disciplines and districts
 - scholar management
+- herbalism, medicine, and potions after Work can support genuinely different scholarly crafts
 - accounts, cloud saves and cross-device progression
 - social systems, community content and monetization
 

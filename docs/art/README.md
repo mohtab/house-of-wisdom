@@ -1,4 +1,4 @@
-# v0.3 Art Set
+# v0.3.1 Art Set
 
 The concept images establish composition, palette, character silhouette, environmental mood and interface direction. A separate static production set is integrated into the playable prologue. These assets still need a final human pixel-grid consistency pass before a release-quality animation pipeline.
 
@@ -6,13 +6,15 @@ The concept images establish composition, palette, character silhouette, environ
 
 | File | Use |
 | --- | --- |
-| `public/assets/v03/opening-comic.png` | silent four-panel arrival comic |
-| `public/assets/v03/house-ruin.png` | Stage 0 cutaway room |
-| `public/assets/v03/house-desk-restored.png` | Stage 1 desk and district-light restoration |
+| `public/assets/v03/opening-comic-long-darkness.png` | four-panel permanent-Darkness comic under live HTML/CSS narration |
+| `public/assets/v03/house-ruin-long-darkness.png` | Stage 0 cutaway room with no celestial or city light |
+| `public/assets/v03/house-desk-restored-long-darkness.png` | Stage 1 desk and one distant returned light |
 | `public/assets/v03/researcher.png` | transparent static researcher layer |
 | `public/assets/v03/al-jahiz-ghost.png` | transparent static unidentified/revealed ghost layer |
 
-Production prompt direction: crisp 16-bit restoration mystery, alternate-history Abbasid Baghdad architecture, moonlit indigo ruin progressing to warm amber and turquoise, Najdi-inspired geometric restraint, readable silhouettes, no combat, modern objects, readable raster text, generic fantasy UI, or orientalist shorthand. Character cutouts were generated against a chroma field and converted to transparent PNGs; ghost opacity and the Ignorance effects are controlled in the interface.
+Production prompt direction: crisp 16-bit restoration mystery, alternate-history Abbasid Baghdad architecture under permanent supernatural Darkness, no sun/moon/stars/dusk cues, only local lamps earned through restoration, Najdi-inspired geometric restraint, and readable silhouettes. Exclude combat, modern objects, raster text, generic fantasy UI, and orientalist shorthand. Character cutouts were generated against a chroma field and converted to transparent PNGs; live narration, ghost opacity, and Ignorance effects are controlled in the interface.
+
+The older concept images below remain useful composition history, but their dusk, moonlight, and ordinary city-light cues are superseded by the v0.3.1 production assets.
 
 ## Files
 
@@ -31,7 +33,7 @@ Prompt direction: 16-bit alternate-history Abbasid Baghdad restoration mystery; 
 
 ### `v0.3-opening-comic-concept-v1.png`
 
-A silent four-panel prologue:
+A four-panel composition reference, now presented with live narrated text boxes:
 
 1. the researcher approaches the ruined House at dusk
 2. moonlight reveals the hammer and torn manuscript

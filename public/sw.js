@@ -1,11 +1,11 @@
-const CACHE = 'house-of-wisdom-v03';
+const CACHE = 'house-of-wisdom-v031';
 const SHELL = [
   '/',
   '/manifest.webmanifest',
   '/favicon.svg',
-  '/assets/v03/opening-comic.png',
-  '/assets/v03/house-ruin.png',
-  '/assets/v03/house-desk-restored.png',
+  '/assets/v03/opening-comic-long-darkness.png',
+  '/assets/v03/house-ruin-long-darkness.png',
+  '/assets/v03/house-desk-restored-long-darkness.png',
   '/assets/v03/researcher.png',
   '/assets/v03/al-jahiz-ghost.png',
 ];

@@ -1,6 +1,6 @@
 # Visual Asset Inventory
 
-Status: approved production map. The static v0.3 prologue asset set is integrated; animation atlases and final pixel-grid cleanup remain future polish.
+Status: approved production map. The static v0.3.1 permanent-Darkness asset set is integrated; animation atlases and final pixel-grid cleanup remain future polish.
 
 The concept and integrated production sets are catalogued in [art/README.md](art/README.md). The current build uses static layered room and character assets plus CSS effects; the broader list below remains the map for later animation and restoration stages.
 
@@ -13,7 +13,8 @@ The concept and integrated production sets are catalogued in [art/README.md](art
 - three-quarter cutaway room composition
 - short station-to-station character movement
 - Arabic-first interface with readable non-bitmap body typography
-- restrained ruin palette that gains warmth and saturation through restoration
+- restrained ruin palette under permanent Darkness; warmth comes only from milestone-earned local lamps
+- no sun, moon, stars, dusk, dawn, or automatic day/night lighting states
 
 ## P0 — style approval set
 
@@ -59,7 +60,7 @@ These references must be approved before production sprites are integrated.
 - exposed brick variants
 - floor tile variants
 - damaged arch and stabilized arch
-- lattice window and moonlight treatment
+- lattice window with the sky and city swallowed by supernatural Darkness
 - broken desk and restored Keeper's Desk
 - empty niche and manuscript niche
 - rubble piles in three sizes
@@ -89,9 +90,11 @@ These references must be approved before production sprites are integrated.
 - obscured-dialogue treatment
 - Language skill-tree node set
 - connector states: hidden, severed, discovered and restored
-- item slot and tooltip frame
+- Satchel drawer, item slot and tooltip frame
 - restoration requirement panel
-- four-panel comic viewer
+- four-panel comic viewer with live Arabic/English narration boxes
+- House / Work / Knowledge navigation and House memory accordion
+- citywide Darkness percentage and milestone-light track
 - primary and secondary button states
 - Arabic/English language control
 - accessibility focus, reduced-motion and high-contrast states
@@ -113,7 +116,7 @@ These references must be approved before production sprites are integrated.
 ### Effects
 
 - ambient dust
-- moonlight particles
+- local lamp motes
 - ghost glow
 - fragmented-letter particles
 - dark ink spread
@@ -142,7 +145,7 @@ Sound is listed for coordination but is not part of the first visual-production 
 - crafting recipes and workstation sprites
 - returning scholar and artisan background sprites
 - market-stall progression visible through the district
-- day, dusk and night lighting states
+- Darkness-percentage milestone states with no day/night cycle
 - Greed environmental influence and recovery states
 
 ## P3 — later chapters

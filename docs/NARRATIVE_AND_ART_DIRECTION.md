@@ -1,10 +1,10 @@
 # Narrative and Art Direction
 
-Status: approved direction implemented in the v0.3 playable prologue. Human playtest validation remains open.
+Status: approved v0.3.1 direction implemented. Focused human validation of the clearer tutorial and permanent-Darkness premise remains open.
 
 ## Creative premise
 
-House of Wisdom is a 16-bit restoration mystery set in an alternate-history Abbasid Baghdad. A timeless, unknown researcher arrives seeking knowledge and finds the House abandoned, damaged, and being consumed by personified forces of darkness.
+House of Wisdom is a 16-bit restoration mystery set in an alternate-history Abbasid Baghdad. A timeless, unknown researcher arrives seeking knowledge and finds a city under a supernatural Darkness that never lifts. There is no day/night cycle. The ruined House is the first place from which light may return.
 
 The player restores two things in parallel:
 
@@ -47,7 +47,7 @@ Their influence appears in architecture, light, sound, manuscripts, resources, i
 
 ### Ignorance
 
-The first Shadow. It removes relationships between ideas and makes unfamiliar knowledge feel threatening.
+The first Shadow. Ignorance has gained physical weight and covered Baghdad. It removes relationships between ideas, isolates books and minds, and makes unfamiliar knowledge feel threatening. Al-Jahiz names it only after the player can understand him.
 
 Its visual language includes missing letters, severed skill-tree connections, ink-like darkness, muted colour, contradictory annotations, and speech that cannot be understood.
 
@@ -79,11 +79,11 @@ Forgetting is the slow, overarching Shadow. It erases names, relationships, achi
 
 ### Panel 1 — The destination
 
-At dusk, the researcher crosses the edge of Baghdad carrying a small satchel. The House of Wisdom is visible beyond the street, dark and partially collapsed. The surrounding district is quiet.
+Beneath a sky with no dawn, the researcher crosses the edge of Baghdad carrying a small satchel. The House of Wisdom is visible beyond the unlit street, dark and partially collapsed. The surrounding district is silent.
 
 ### Panel 2 — Two tools
 
-Inside the ruined hall, a shaft of moonlight reveals rubble, a worn hammer, and a torn manuscript on a broken desk.
+Inside the ruined hall, the researcher’s small lamp reveals rubble, a worn hammer, and a torn manuscript on a broken desk. No celestial light enters the room.
 
 ### Panel 3 — The impossible greeting
 
@@ -91,25 +91,26 @@ A translucent scholar appears. He speaks, but his words fragment into disconnect
 
 ### Panel 4 — The decision
 
-The researcher takes the manuscript in one hand and the hammer in the other. A small warm light enters the room. The title appears: Restore what was forgotten.
+The researcher takes the manuscript in one hand and the hammer in the other. Their lamp is the only warm point in the room. The quest is clear: bring light back to Baghdad.
 
-## v0.3 opening sequence: The First Word
+## v0.3.1 opening sequence: The First Word
 
 The first implementation target is a focused 10–15 minute prologue:
 
-1. View the four-panel arrival comic.
+1. View four narrated panels establishing the city without dawn, the Darkness, the unknown guardian, and the two tools. Neither Al-Jahiz nor Ignorance is named yet.
 2. Enter the ruined House.
 3. Encounter the unidentified ghost and fail to understand him.
-4. Inspect the torn manuscript and hammer.
-5. Begin the Language tree.
-6. Recover the ghost's first complete word.
-7. Understand his first complete sentence and first joke.
-8. Salvage timber and stone from the room.
-9. Repair the Keeper's Desk with the hammer.
-10. See Ignorance react through the room and interface.
-11. End with evidence that the House was deliberately abandoned.
+4. Follow the researcher’s speech bubble to inspect the torn manuscript; Work begins automatically.
+5. Receive the first-discovery reward after six seconds and follow the guide to Knowledge.
+6. Understand The First Letter immediately, then continue the Language tree.
+7. Recover the ghost's first complete word.
+8. Understand his first complete sentence and first joke.
+9. Salvage timber and stone from the room.
+10. Repair the Keeper's Desk with the hammer.
+11. Learn that the Darkness is Ignorance given weight; see the citywide meter fall from 100% to 99%.
+12. End with the need to circulate knowledge through copied manuscripts, trade, and donation.
 
-No mining, full market, city traversal, or battle system is required for this slice.
+No manuscript-copying economy, mining, full market, city traversal, or battle system is required for this slice; those systems are foreshadowed only.
 
 ## Core progression loop
 
