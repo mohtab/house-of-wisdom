@@ -13,10 +13,10 @@ House of Wisdom uses real historical figures through Chronicles rather than trea
 
 ## Current Chronicles
 ### Al-Kindi
-Focus: analytical reasoning and cryptanalysis through patterns and frequency.
+Focus: analytical reasoning and cryptanalysis through patterns and frequency. In v0.2 the player counts a repeated symbol, compares frequency, tests a substitution, and recognizes the resulting pattern. The interaction demonstrates a method without claiming to reproduce a specific historical ciphertext.
 
 ### Al-Battani
-Focus: repeated astronomical observation and increasingly accurate celestial tables.
+Future focus: repeated astronomical observation and increasingly accurate celestial tables. In v0.2 this Chronicle is a visual teaser only; it has no playable content.
 
 ### Ibn al-Haytham
 Deferred until the first slice is validated. Planned focus: experimentation with light, observation, and competing explanations of vision.
