@@ -139,13 +139,16 @@ Sound is listed for coordination but is not part of the first visual-production 
 
 ## P2 — House restoration expansion
 
-- one ordered Work queue with clear Learn / Make / Serve markers, three visible slots, and reorder states
-- one House-level Daily Need card with a three-step progress chain
+- persistent Scholar’s Ledger with Story, House, Civic, Daily, completed, and pinned task states
+- one Current Work card with active, stopped, blocked, 10-repeat, 100-repeat, and indefinite states
+- six discipline emblems: Language, Scribing, Gathering, Translation, Mathematics, and Architecture
+- activity Mastery badge and progress treatment from 1 to 100
+- three Daily Duty cards for Learn, Make, and Serve
 - Campaign Darkness baseline marker plus three temporary Daily Encroachment segments
-- compact offline return report for completed tasks, gains, changes, and blockers
-- eastern-school dark, responding, and relit district states
+- compact offline return report for completed repetitions, gains, Mastery, and blockers
+- eastern-school dark, receiving copies, and relit district states
 - Scriptorium ruined, under-repair, and restored states
-- preserved original manuscript and player-made copy item variants
+- ink, preserved original manuscript, folio, and stackable primer-copy item variants
 
 - hall restoration stages: ruin, cleared, stabilized, working and flourishing
 - Scriptorium, workshop, library and courtyard station sets

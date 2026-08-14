@@ -1,4 +1,4 @@
-const CACHE = 'house-of-wisdom-v04';
+const CACHE = 'house-of-wisdom-v05';
 const SHELL = [
   '/',
   '/manifest.webmanifest',

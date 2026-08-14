@@ -1,76 +1,53 @@
-# House of Wisdom | بيت الحكمة
+# House of Wisdom
 
-House of Wisdom is a browser-first restoration mystery set in an alternate-history Abbasid Baghdad. A nameless researcher enters a ruined House, finds a torn manuscript and worn hammer, and begins restoring meaning and place together.
+A browser-first idle restoration mystery set in an alternate-history Abbasid Baghdad.
 
-Version 0.4, **The Day’s Work**, keeps the guided 10–15 minute prologue and adds the first repeatable return loop. The researcher restores the Scriptorium, plans Learn → Make → Serve work in a three-slot queue, and answers a school’s need while permanent progress remains safe from missed days.
+Version 0.5, **A Scholar’s Life**, preserves the fast narrated prologue and introduces the long-form game: choose one repeating activity, progress for up to 24 hours offline, build interconnected disciplines, master individual actions, and complete persistent Ledger goals that restore the House and circulate knowledge through the city.
 
-## Play locally
+## Play
 
-Requirements: Node.js 22 or newer and npm.
-
-```bash
+```powershell
 npm install
 npm run dev
 ```
 
-Open the URL printed by Vite, normally `http://localhost:5173`.
+Open the local address shown by Vite. Progress is stored on the current device and earlier prototype saves migrate automatically.
 
-For a production build:
+## Test
 
-```bash
-npm run build
-npm run preview
-```
-
-## The Day’s Work
-
-- Arabic-first four-panel comic with live narration and complete English support
-- Clear speech-bubble tutorial from manuscript inspection to the first Language insight
-- Permanent citywide Darkness meter: 100% at arrival, 99% after the Keeper’s Desk
-- Three primary sections—House, Work, and Knowledge—with Satchel inventory and House memories
-- 16-bit room art, researcher sprite, Al-Jahiz ghost, and Najdi-inspired interface patterns
-- Fragmented dialogue that becomes understandable through the Language tree
-- Four opening Language insights: letters, roots, grammar, and eloquence
-- Al-Jahiz identity reveal with progressively restored dialogue and dry humour
-- One ordered three-slot Work queue that stops when the chosen plan is complete
-- Learn, Make, and Serve task purposes, with Daily and discipline labels instead of new menus
-- Timber and stone salvage using the same timestamp-driven queue
-- One visible restoration: the Keeper’s Desk
-- A second permanent restoration: the Scriptorium, lowering Campaign Darkness from 99% to 95%
-- One authored Daily Need: decipher, copy, and deliver a primer to the eastern school
-- Three non-stacking points of temporary Darkness, cleared from 98% back to the 95% baseline
-- A return ledger listing completed tasks, gains, Darkness cleared, and any blocked task
-- Ignorance introduced through the environment rather than combat
-- Versioned local save, progress-preserving v0.3/v0.3.1 migration, and offline progression capped at 8 hours
-- Responsive desktop, tablet, mobile, RTL, reduced-motion, and keyboard-focus presentation
-
-The previous Al-Kindi/Mathematics slice remains useful design history but is no longer the playable opening.
-
-## Validation
-
-```bash
+```powershell
 npm test
 npm run test:playthrough
-npm run test:e2e
 npm run build
+npm run test:e2e
 ```
 
-The deterministic playthrough guards the complete prologue against exceeding 15 minutes. Unit tests cover guided onboarding, queue ordering and limits, both Darkness layers, the Scriptorium and Daily chain, skill dependencies, resource spending, save migration, and offline limits. Browser tests cover the narrated comic, first insight, three-section navigation, Satchel, Al-Jahiz reveal, both restorations, the complete school chain, the return ledger, RTL, and responsive layouts.
+## A Scholar’s Life
 
-## Scope boundary
+- One repeating **Current Work** activity rather than an action queue
+- 10, 100, or continuous repetition targets
+- 24-hour offline progression and return report
+- Persistent **Scholar’s Ledger** with three pinned-goal slots
+- Arabic, Gathering, Scribing, Translation, Mathematics, and Architecture
+- Discipline levels and activity mastery to 100
+- Story-gated skill dependencies
+- Stackable ink and manuscript copies
+- A day-scale Scriptorium restoration
+- A twenty-copy eastern-school civic request
+- Three substantial renewable Daily Duties and non-stacking temporary Darkness
+- Permanent Campaign Darkness lowered only through service and restoration
 
-Deliberately deferred from v0.4:
+The player grinds to recover knowledge, but progresses the story by putting that knowledge to work.
 
-- a broader manuscript-copying catalogue, trading economy, full market, and mining
-- free city exploration
-- complete crafting and Architecture trees
-- combat or humanoid Shadow forms
-- Astronomy, Al-Battani, and the revised Al-Kindi chapter
-- a larger authored pool of Daily Needs and alternative discipline solutions
-- accounts, cloud saves, multiplayer, monetization, achievements, streaks, and login rewards
+## Documentation
 
-See [docs/CORE_GAME_LOOP.md](docs/CORE_GAME_LOOP.md), [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md), [docs/NARRATIVE_AND_ART_DIRECTION.md](docs/NARRATIVE_AND_ART_DIRECTION.md), [docs/ROADMAP.md](docs/ROADMAP.md), and [docs/PLAYTEST.md](docs/PLAYTEST.md).
+- [Core game loop](docs/CORE_GAME_LOOP.md)
+- [Game design](docs/GAME_DESIGN.md)
+- [Roadmap](docs/ROADMAP.md)
+- [Narrative and art direction](docs/NARRATIVE_AND_ART_DIRECTION.md)
+- [Visual asset inventory](docs/VISUAL_ASSET_INVENTORY.md)
+- [Playtest guide](docs/PLAYTEST.md)
 
-## License
+## Current boundary
 
-MIT. See [LICENSE](LICENSE).
+The six-skill foundation is playable, but later disciplines remain intentionally shallow. Markets, staffed-room automation, mining regions, Herbalism, combat, accounts, and cloud saves are deferred until the core grind and return loop are validated.

@@ -1,6 +1,6 @@
 # Narrative and Art Direction
 
-Status: approved direction implemented through the first v0.4 Daily Need. Focused human validation of the queue and daily-pressure premise remains open.
+Status: approved direction implemented through the v0.5 long-grind foundation. Focused human validation of Current Work, Mastery, and daily pressure remains open.
 
 ## Creative premise
 
@@ -114,9 +114,11 @@ No manuscript-copying economy, mining, full market, city traversal, or battle sy
 
 ## Core progression loop
 
-A need appears → Learn what is needed → Make a useful response → Serve a person or district → clear today’s encroaching Darkness → invest the surplus to Restore permanently → unlock new needs, disciplines, people, and stories.
+Choose a long task from the Scholar’s Ledger → repeat one Current Work activity → gain resources, discipline XP, and activity Mastery → apply the accumulated output to a House or civic project → push back Campaign Darkness → unlock new disciplines, people, and stories.
 
-Learn, Make, Serve, and Restore describe why a task matters; disciplines describe how the researcher can approach it. See [CORE_GAME_LOOP.md](CORE_GAME_LOOP.md) for the queue, Daily Need, and Darkness rules.
+After the eastern school is restored, a smaller daily loop sits inside that progression: Learn → Make → Serve → clear today’s three encroachment points. Daily Duties do not replace the long restoration projects and never stack into punishment.
+
+Learn, Make, Serve, and Restore describe why work matters; disciplines describe how the researcher approaches it. See [CORE_GAME_LOOP.md](CORE_GAME_LOOP.md) for the Ledger, Current Work, Mastery, Daily Duty, and Darkness rules.
 
 ## Knowledge progression
 
@@ -164,7 +166,9 @@ Restoration changes both spaces:
 
 This communicates social impact without requiring free city exploration.
 
-The district also provides one authored Daily Need at a time. These are small human consequences of the current Shadow—a school without a readable primer, a well measured incorrectly, a remedy missing from an infirmary—not generic chores. Completing its Learn, Make, and Serve chain temporarily clears the day’s encroachment; major House and civic restorations permanently lower the Campaign Darkness baseline. Missed days never stack or undo the city’s recovery.
+The district provides authored civic campaigns: a school without readable primers, a well measured incorrectly, or an infirmary missing a remedy. These are substantial projects that require repeated preparation and delivery, not generic chores. Completing a campaign permanently lowers the Campaign Darkness baseline.
+
+Once the first school is relit, the House also receives three small Daily Duties: Learn, Make, and Serve. These clear only the current day’s temporary encroachment. Missed days never stack or undo the city’s recovery.
 
 ## Visual identity
 

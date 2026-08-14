@@ -1,103 +1,124 @@
-# Game Design v0.4 — The Day’s Work
+# Game Design v0.5 — A Scholar’s Life
 
-House of Wisdom is a browser-first idle restoration mystery set in an alternate-history Abbasid Baghdad. Version 0.4 extends the guided first 10–15 minutes into the first complete return loop.
+House of Wisdom is a browser-first idle restoration mystery set in an alternate-history Abbasid Baghdad. Version 0.5 preserves the guided narrative opening and rebuilds the repeatable game around a deliberate long-form grind, interconnected disciplines, persistent goals, and offline progression.
 
 ## Player fantasy
 
-The player is a timeless, nameless researcher seeking knowledge. They restore a visible institution by recovering meaning, applying disciplines, and rebuilding spaces that let knowledge serve people again.
+The player is a timeless, nameless researcher seeking knowledge. They arrive at an abandoned House, recover the Arabic needed to understand its ghostly guardian, and learn that Baghdad’s permanent supernatural Darkness is Ignorance given weight.
 
-The player does not fight conventional monsters. Baghdad is trapped under permanent supernatural Darkness with no day/night cycle. Its environmental Shadows—Ignorance, Greed, Famine, Fear, and Forgetting—damage language, trust, resources, institutions, and memory.
+The player begins alone. Through study, copying, gathering, translation, calculation, service, and restoration, they rebuild the House into a functioning institution whose scholars and rooms can eventually work alongside them.
 
-## First-session promise
+## Narrative promise
 
-Read the narrated arrival → follow the in-room guide to the manuscript → turn Work into Knowledge → restore speech through Language → reveal Al-Jahiz → salvage purposeful materials → repair the Keeper’s Desk → move city Darkness from 100% to 99% → discover that circulating knowledge weakens Ignorance.
+The manuscript restores meaning. The hammer restores its home. Knowledge defeats the Shadows only when it becomes culture, teaching, craft, fair exchange, or public infrastructure.
 
-The desired emotional rhythm is mystery → comprehension → companionship → useful work → visible hope → larger threat.
+The environmental Shadows remain:
 
-## Full-game loop
+- Ignorance separates books, minds, and ideas.
+- Greed hoards material and distorts exchange.
+- Famine strains food, water, and health.
+- Fear silences speech and public gathering.
+- Forgetting severs people from connected memory.
 
-A need appears → **Learn** what is needed → **Make** a useful response → **Serve** a person or district → clear today’s encroaching Darkness → invest the surplus to **Restore** permanently → unlock new needs, disciplines, people, and stories.
+## Main game loop
 
-This loop works at three speeds: queue decisions over minutes, one civic need over a day, and permanent House and city restoration across the campaign. [CORE_GAME_LOOP.md](CORE_GAME_LOOP.md) is the authoritative mechanic specification.
+Choose a goal in the Scholar’s Ledger → select one Current Work activity → repeat it online or for up to 24 hours offline → gain resources, skill XP, and activity mastery → feed another skill → complete a civic or restoration task → push back Darkness and unlock more of the House, city, and story.
 
-The v0.3.1 prologue proves the first permanent restoration. v0.4 adds the queue, Scriptorium, and first Daily Need as a playable vertical slice.
+[CORE_GAME_LOOP.md](CORE_GAME_LOOP.md) is the authoritative mechanic specification.
 
-## Implemented systems
+## Implemented v0.5 systems
 
-- Knowledge as the opening intellectual resource
-- Language, Translation, Mathematics, and Architecture XP foundations
-- deterministic level thresholds and connected Language insights
-- one ordered three-slot queue for timestamp-driven study, salvage, and civic work
-- timber and stone as bounded restoration materials
-- one repair recipe: the Keeper’s Desk
-- progressively restored ghost dialogue and Al-Jahiz identity reveal
-- one visible room restoration and district-light response
-- one citywide Darkness meter with a permanent Campaign baseline and capped temporary Daily Encroachment
-- Ignorance as an environmental effect and narrative antagonist
-- House / Work / Knowledge navigation, a Satchel drawer, and story memories inside the House
-- versioned local save with v0.1–v0.3.1 migration
-- timestamp-based offline work capped at eight hours
-- Arabic-first presentation, full English support, and RTL layout
-- a Work queue shared by Learn, Make, and Serve tasks
-- one authored Daily Need at a time, resolved by a linked Learn → Make → Serve chain
-- a non-stacking three-point Daily Encroachment above a permanent Campaign Darkness baseline
-- permanent Darkness reduction only through major Restore projects
-- a short return report for completed offline work
-- manuscript copying that preserves originals and lets copies serve the district
-- a restored Scriptorium and relit eastern school
+- fast four-panel opening and speech-bubble tutorial
+- Arabic-first presentation, English support, RTL, desktop, tablet, and mobile layouts
+- one repeating Current Work activity rather than a three-action queue
+- 10, 100, or continuous repetition targets
+- 24-hour offline simulation and aggregated return report
+- persistent Scholar’s Ledger with Chronicle, Restoration, Civic, Research, and Daily categories
+- three pinned goals used only for tracking
+- six visible interconnected disciplines: Arabic, Scribing, Gathering, Translation, Mathematics, and Architecture
+- story gating that reveals those disciplines in order
+- discipline XP with a long level curve to 100
+- activity-specific mastery to 100 with interval and output improvements
+- Knowledge, timber, stone, ink, and manuscript-copy chains
+- a long Scriptorium restoration requiring a day-scale grind
+- persistent eastern-school request requiring one deciphering action and twenty copied and delivered primers
+- Campaign Darkness at 96% after the Scriptorium and 95% after the school relights
+- three renewable Daily Duties: 5,000 Knowledge, 100 Make actions, and 50 Serve actions
+- three-point non-stacking Daily Encroachment
+- save version 6 with migration from v0.4 and earlier supported formats
+
+## Playable discipline scope
+
+### Arabic Language
+
+Trace letters, restore words, rebuild phrases, study eloquence, and teach reading. The original Arabic insight path still reveals Al-Jahiz before the long grind begins.
+
+### Gathering
+
+Recover timber and sort stone from the ruined House. Gathering supplies restoration and is the foundation for later quarrying and mining.
+
+### Scribing
+
+Prepare ink, copy primers, copy useful folios, preserve originals, and circulate copies. Ink is consumed when a copy is made.
+
+### Translation
+
+Unlocked after the eastern school relights. The current proof activity compares a Syriac passage and begins the road into Mathematics.
+
+### Mathematics
+
+Unlocked at Translation level 10. The current proof activity studies geometric measures.
+
+### Architecture
+
+Unlocked at Mathematics level 10. The current proof activity drafts a load-bearing arch.
 
 ## Current content boundary
 
 Playable now:
 
-- narrated four-panel arrival comic
-- speech-bubble tutorial through the first immediately affordable insight
-- Language and Literature: letters, word roots, grammar, and eloquence
-- four Language study activities
-- timber and stone salvage
+- the complete First Word prologue
 - Keeper’s Desk restoration
-- Scriptorium restoration
-- three-slot Work queue and return ledger
-- eastern-school Daily Need: decipher, copy, and deliver a primer
-- Campaign Darkness at 95% with a visible three-point daily layer
-- Al-Jahiz reveal and first journal chapter
-- Ignorance reveal and prologue ending
+- multi-hour Scriptorium restoration
+- eastern-school civic chain
+- all six skill cards and their first dependency path
+- repeating work, targets, offline returns, skill XP, mastery, items, tasks, pins, and Daily Duties
 
-Visible but not playable:
+Still deliberately shallow:
 
-- Poetry and Metre
-- Translation
-- Mathematics and Architecture
+- Translation, Mathematics, and Architecture each have only their first proof activity
+- Scribing and Gathering have a small initial catalogue
+- Daily Duties use fixed targets rather than a large authored pool
+- no staffed room automation yet
+- no random rare-discovery catalogue yet
 
 Deferred:
 
-- a broader manuscript-copying catalogue, trade, full market, mining, expeditions, and free city exploration
-- complete crafting and Architecture trees
-- humanoid Shadows, combat, or battle system
-- revised Al-Kindi chapter and Astronomy
-- accounts, backend, cloud saves, multiplayer, monetization, achievements, streaks, and login rewards
+- full market and Greed chapter
+- quarrying, regional mining, and expeditions
+- complete crafting and Architecture catalogues
+- Herbalism, medicine, agriculture, and potions
+- free city exploration
+- humanoid Shadows, combat, or battle systems
+- accounts, cloud saves, multiplayer, monetization, streaks, and login rewards
 
 ## Design rules
 
 - Game first, education second.
-- Teach through interaction and consequences, not trivia.
+- Embrace long automatic repetition as part of play.
+- Make each grind action advance resource, skill XP, and mastery.
+- Separate persistent goals from the activity currently running.
+- Allow only one personal activity until restoration earns institutional automation.
+- Keep the prologue fast; begin the hours-long grind only after the player understands the fantasy.
+- Reveal disciplines through story milestones.
 - Make every resource answer a visible need.
-- Categorize tasks by purpose—Learn, Make, Serve, Restore—not by discipline or frequency.
-- Use one Work queue; Daily, Story, Repeatable, and disciplines are tags rather than extra menus.
-- Give the city at most one unresolved Daily Need.
-- Let temporary Darkness create direction without ever erasing permanent progress.
-- Never stack missed days, expire civic needs, or punish absence with a broken streak.
-- Always show what is running, how long remains, and what it rewards.
-- Keep movement short and task-directed.
+- Preserve originals and circulate copies.
+- Let temporary Darkness provide a daily objective without erasing permanent progress.
+- Show exactly why work stopped.
 - Represent conflict environmentally before adding confrontation systems.
-- Show knowledge changing institutions and communities, not acting like magic.
-- Preserve one authoritative state model and one game clock.
-- Expand only after new players want to know what happens next.
 
 ## Visual identity
 
-The House uses deliberate 16-bit pixel art: deep indigo supernatural Darkness and dusty umber in the ruin, lit only by locally earned lamps and warming toward amber, turquoise, muted red, and green through restoration. A three-quarter cutaway room keeps the House as the visual focus. Najdi-inspired geometry, painted-door colours, borders, and pattern bands give the interface a distinctive regional graphic language.
-
-This is a respectful creative synthesis, not a literal reconstruction of a lost building. Avoid generic fantasy-Arabia imagery, excessive gold, ornamental clutter, and orientalist shorthand. Arabic body text remains shaped, readable web text inside pixel-art frames.
+The House retains its deliberate 16-bit identity: deep indigo supernatural Darkness, dusty umber ruins, earned amber light, turquoise and muted red accents, three-quarter cutaway architecture, and Najdi-inspired geometric interface bands. Arabic remains readable web text inside pixel-art frames.
 
 See [CORE_GAME_LOOP.md](CORE_GAME_LOOP.md), [NARRATIVE_AND_ART_DIRECTION.md](NARRATIVE_AND_ART_DIRECTION.md), [VISUAL_ASSET_INVENTORY.md](VISUAL_ASSET_INVENTORY.md), and [ROADMAP.md](ROADMAP.md).

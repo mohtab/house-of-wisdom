@@ -1,89 +1,113 @@
-# v0.4 Playtest Notes — The Day’s Work
+# v0.5 Playtest — A Scholar’s Life
 
-## Launch
+## Purpose
 
-```bash
-npm install
-npm run dev
-```
+Test whether the story and Melvor-inspired idle foundation now support one another: a fast dramatic opening followed by a deliberate daily grind, interconnected skills, persistent goals, mastery, and meaningful offline returns.
 
-Open the URL printed by Vite. For a fresh session, select **New journey** at the bottom and confirm the local reset.
+## Required structure
 
-## Moderation rule
+Use the same save across at least three sessions.
 
-Do not explain the premise, skill tree, resources, or objective. Ask the player to think aloud. Intervene only for a technical failure, and record where that happened.
+### Session 1 — First Word
 
-## Questions to answer
+Start fresh and stop after repairing the Keeper’s Desk.
 
-1. From the comic alone, do they understand that Baghdad has no dawn, the Darkness is persistent, and their quest is to restore light?
-2. Do they understand the manuscript and hammer as two connected forms of progression without Al-Jahiz or Ignorance being named early?
-3. Does the ghost’s broken speech create curiosity rather than narrative confusion?
-4. Does the in-room speech bubble lead them through Inspect manuscript → Work → first reward → Knowledge → The First Letter without prompting?
-5. Do House, Work, and Knowledge feel sufficient and distinct? Is the Satchel easier to understand than a fourth Inventory tab?
-6. Do they understand why Language progress restores the ghost’s speech?
-7. Is Al-Jahiz’s identity reveal satisfying, and does his humour feel appropriate?
-8. Do timber and stone feel purposeful rather than like generic loot?
-9. Does repairing the Keeper’s Desk and moving 100% → 99% feel meaningful rather than too small?
-10. Do they understand that Restore projects lower Campaign Darkness permanently while Daily tasks clear only temporary encroachment?
-11. At the end, can they explain Ignorance and why circulating copied manuscripts can restore the city?
-12. What do they expect or want to restore next?
+Observe whether the player can state:
 
-## Record for each session
+- Baghdad is trapped in permanent Darkness.
+- They are a researcher restoring the House and the city’s light.
+- Arabic lets them understand the ghost.
+- The ghost is Al-Jahiz.
+- Work creates Knowledge and resources.
+- Applying knowledge, not merely hoarding it, pushes back Ignorance.
 
-- device and screen size
-- language used
-- time to enter, inspect the manuscript, reach the first insight, reveal Al-Jahiz, and restore the desk
-- every point where the player pauses for more than 20 seconds
-- mistaken assumptions about Knowledge, XP, materials, queue order, or the two Darkness layers
-- emotional reaction to the comic, first joke, identity reveal, and Ignorance reveal
-- what they queue before leaving and whether they return curious about the result
+Target: complete the prologue in 10–15 minutes without external guidance.
+
+### Session 2 — Plan the long grind
+
+Ask the player to inspect the Scholar’s Ledger, choose Current Work, and leave the Scriptorium grind running.
+
+Do not explain the interface. Observe whether they understand:
+
+- Ledger goals are persistent and may be pinned.
+- Pins do not schedule work.
+- Only one personal activity repeats.
+- 10, 100, and continuous are stopping choices.
+- every repetition grants a resource, skill XP, and mastery;
+- Knowledge, timber, and stone all contribute to the Scriptorium;
+- the 24-hour offline cap supports a daily return rhythm.
+
+Before they leave, ask: “What will happen while you are away, and what are you hoping to unlock?”
+
+### Session 3 — Return and redirect
+
+Return several hours later on the same save.
+
+Observe whether the player:
+
+- reads and understands the return report;
+- notices resources, XP, and mastery advancing together;
+- can explain why work stopped, if it stopped;
+- changes activities intentionally based on the Scriptorium requirements;
+- feels that the long requirement is a motivating project rather than an arbitrary wall.
+
+### Session 4 — Circulate knowledge
+
+Use a prepared save if necessary. Restore the Scriptorium and complete the eastern-school request.
+
+Observe whether the player understands:
+
+- ink is prepared before copies are made;
+- the original primer stays in the House;
+- twenty copies represent institutional scale rather than busywork without meaning;
+- delivering the copies, not hoarding them, relights the school;
+- Translation unlocks because knowledge has begun to circulate.
+
+### Session 5 — Daily duties
+
+Return on a later local day.
+
+Verify that the player can distinguish:
+
+- persistent Chronicle, Restoration, Civic, and Research tasks;
+- renewable Daily Study, Daily Craft, and Daily Service;
+- permanent Campaign Darkness;
+- temporary three-point Daily Encroachment;
+- missed days that do not stack or erase progress.
+
+## Evidence to record
+
+- session length and return interval
+- Current Work selected before each departure
+- whether a repetition target was chosen
+- what the player expected to receive
+- whether the return report matched that expectation
+- which Ledger goal drove the next decision
+- moments when the player changed activity and why
+- any confusion between skill level and activity mastery
+- whether the Scriptorium cost felt purposeful, excessive in a satisfying way, or simply arbitrary
+- whether the player wanted to optimize another return
 
 ## Success gate
 
-Test the prologue with 5–10 new players. Keep the v0.4 expansion only if most players:
+Keep the v0.5 foundation if most players:
 
-- complete the prologue without explanation
-- reach The First Letter through the tutorial without exploring the wrong screen
-- understand their role and the two-tool premise
-- describe the city as permanently dark and their quest as restoring light
-- describe Ignorance as a force acting against the House
-- notice the room and district restoration
-- want to restore another part of the House
-- recognize the visual identity as distinctive and coherent
+- finish the prologue without the grind delaying the narrative promise;
+- correctly separate goals from active work;
+- leave an activity running with an intelligible plan;
+- enjoy receiving several forms of progress from repetition;
+- understand at least four links in the skill dependency graph;
+- accept long requirements because they produce visible institutions and unlocks;
+- connect copying and delivery to fighting Ignorance;
+- return voluntarily to redirect their researcher.
 
-## Automated verification
+## Failure diagnoses
 
-```bash
-npm test
-npm run test:playthrough
-npm run test:e2e
-npm run build
-```
+Do not shorten the grind automatically.
 
-The browser suite checks desktop, 768 × 1024 Arabic/RTL tablet, and 390 × 844 mobile layouts; narrated comic and guided first insight; three-section navigation and Satchel; the real six-second clock; progress-preserving migration; Al-Jahiz reveal; both restorations; the complete school queue; the return ledger; both Darkness layers; House memories; horizontal overflow; and page/console errors.
-
-## Known constraints
-
-- Saves are local to one browser profile and device.
-- There is no sound pass.
-- Character animation is intentionally minimal in this slice.
-- The surrounding district changes visually but is not explorable.
-- Broader manuscript copying and trade, Poetry, Translation, Mathematics, Architecture, markets, mining, Herbalism, and Shadow confrontation are future paths.
-- AI-generated bitmap assets are production prototypes and should receive a dedicated pixel-grid consistency pass before final release.
-
-## v0.4 return-loop test
-
-Use a fresh save for the first session and return to the same save on a later calendar day. Observe rather than explain.
-
-Test whether players can:
-
-- distinguish Learn, Make, Serve, and Restore from their purpose and icons;
-- predict the order and result of the three-slot queue;
-- use **Queue this plan** for the eastern school without losing control of the queue;
-- explain why current Darkness rose above the permanent Campaign Darkness baseline;
-- clear the three encroachment points and recognize that the 95% baseline is permanent;
-- understand that an unfinished Daily Need will wait and missed days will not stack;
-- connect the preserved original, donated copy, and relit school;
-- choose what should run while they are away and express curiosity about the next return.
-
-Reject or simplify the mechanic if players describe it as upkeep, fear missing a day, confuse temporary encroachment with lost restoration, or cannot tell why a completed task helped the city.
+- If the player cannot predict the outcome, improve rate, target, and blocker presentation.
+- If hours of work advance only one number, add compounding rewards or discoveries.
+- If requirements feel arbitrary, strengthen their civic framing and visible consequence.
+- If the player forgets the story, add narrative events at skill, mastery, and task milestones.
+- If Daily Duties feel punitive, reduce their pressure or let more activities qualify; do not add streak rewards.
+- If later skills feel detached, strengthen their material and manuscript dependencies before adding more skills.

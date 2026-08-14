@@ -1,170 +1,98 @@
 # Roadmap
 
-## v0.2 — completed mechanics and first-session prototype
+## v0.2 — mechanics prototype — completed
 
-The implemented build validates the technical foundation:
+Validated timestamp progression, local saves, research dependencies, house stages, English/Arabic presentation, and responsive layouts. Playtesting found that it lacked conflict, drama, and a distinctive identity.
 
-- timestamp-based idle progression and offline return
-- local versioned save
-- Translation and Mathematics activities
-- research dependencies and modifiers
-- an interactive Al-Kindi Chronicle
-- visible House stages
-- English, Arabic, RTL, desktop, tablet and mobile presentation
+## v0.3 — The First Word — completed and playtested
 
-Initial playtest feedback found that the build improved clarity and reliability but lacked sufficient conflict, dramatic purpose and a distinctive visual identity. v0.2 remains useful as a mechanics prototype; its current narrative and visual layer are not the intended final direction.
+Introduced the timeless researcher, abandoned alternate-history House, unidentified Al-Jahiz ghost, torn manuscript, hammer, Arabic-first skill tree, Ignorance, 16-bit art direction, Najdi-inspired interface patterns, and the first room repair.
 
-## v0.3 — The First Word — implemented and playtested
+## v0.3.1 — The Long Darkness — completed
 
-Goal: prove the revised narrative and art direction in the first 10–15 minutes before rebuilding the full session.
+Made the quest explicit: Baghdad has no dawn, the Darkness never lifts on its own, and the researcher is restoring light. Added narrated comic captions, speech-bubble guidance, reduced navigation, merged story memories into the House, and introduced the city Darkness percentage.
 
-### Completed production gate
+## v0.4 — The Day’s Work — completed, then superseded
 
-- approve the narrative and art-direction brief
-- approve the complete visual asset inventory
-- approve a 16-bit style sheet, palette and pixel scale
-- approve the researcher, unidentified Al-Jahiz, ruined hall, Ignorance effects and four-panel comic
-- test Arabic readability inside the pixel-art interface
+Tested a three-slot Learn → Make → Serve queue and one Daily Need. It established permanent versus temporary Darkness and the eastern-school story, but incorrectly combined the player’s task list with the idle activity scheduler.
 
-The approved concept set was translated into a playable room, opening comic, researcher, ghost, Language tree, restoration interface, and environmental Ignorance treatment. Initial feedback was positive on atmosphere and visual improvement, but found the tab structure confusing and the narrative/tutorial too implicit.
+Its useful narrative and Darkness work is preserved in v0.5. The three-slot queue is not.
 
-### Playable scope
+## v0.5 — A Scholar’s Life — implemented, awaiting focused playtests
 
-- four-panel arrival comic
-- timeless unknown researcher
-- ruined alternate-history House in Abbasid Baghdad
-- unidentified Al-Jahiz ghost with fragmented dialogue and dry humour
-- Arabic Language and Literature as the first skill tree
-- manuscript and hammer as the founding tools
-- small salvage loop using timber and stone
-- one repair: the Keeper's Desk
-- short task-directed player movement
-- Ignorance as an environmental antagonist
-- surrounding district visible but not explorable
-- first evidence that the House was deliberately abandoned
+Goal: establish the Melvor-inspired long-form idle foundation without breaking the approved story.
 
-### Explicitly excluded
+### Implemented scope
 
-- full market economy
-- mining and expeditions
-- free city exploration
-- complete crafting and Architecture trees
-- humanoid Shadow forms
-- battle or combat system
-- Astronomy and Al-Battani expansion
+- replace the action queue with one repeating Current Work activity
+- allow targets of 10, 100, or continuous repetitions
+- extend offline progression from 8 to 24 hours
+- add a persistent Scholar’s Ledger with Chronicle, Restoration, Civic, Research, and Daily goals
+- let the player pin three goals without scheduling them
+- add six visible disciplines: Arabic, Gathering, Scribing, Translation, Mathematics, and Architecture
+- gate disciplines through story milestones
+- add discipline XP to level 100 and activity mastery to level 100
+- make mastery reduce intervals and increase output at checkpoints
+- add stackable ink, primer copies, and useful folios
+- require ink to produce manuscript copies
+- turn the Scriptorium into the first multi-hour project: 6,000 Knowledge, 800 timber, and 600 stone
+- turn the eastern school into a persistent civic request: decipher once, make twenty primers, deliver twenty primers
+- lower Campaign Darkness to 96% after the Scriptorium and 95% after serving the school
+- add three substantial Daily Duties after the school relights: 5,000 Knowledge, 100 Make actions, 50 Serve actions
+- retain one non-stacking three-point Daily Encroachment
+- migrate v0.4 saves into the new Current Work and Ledger model
 
-### Original success gate
-
-Test with 5–10 new players and evaluate whether they:
-
-- understand their role and the House's condition
-- recognize the manuscript and hammer as two forms of progression
-- feel curiosity about the ghost's identity
-- understand why Language restores his speech
-- perceive Ignorance as an active threat
-- enjoy the first repair and want to restore another part of the House
-- recognize the visual identity without explanation
-
-## v0.3.1 — The Long Darkness — implemented, awaiting focused playtests
-
-Goal: make the conflict, quest, and first actions unmistakable without expanding the prologue’s system scope.
-
-- establish that Baghdad has no dawn or day/night cycle; the supernatural Darkness never lifts on its own
-- narrate all four comic panels without naming Al-Jahiz or Ignorance early
-- guide the player in-room through manuscript inspection, the first real-time reward, and the first Language insight
-- give the first discovery enough Knowledge and Language XP to unlock that insight immediately
-- reduce primary navigation to House, Work, and Knowledge
-- move inventory into the Satchel and merge the Journal into the House as What the House Remembers
-- show a permanent Darkness percentage driven by story milestones, from 100% to 99% after the Keeper’s Desk
-- preserve v0.3 progress and let returning players replay the opening without forcing the tutorial
-- revise comic and room art to remove moons, stars, dusk, and ordinary city lights
-
-### v0.3.1 validation gate
-
-Test whether new players can state, without prompting: “I am restoring light to Baghdad; work produces Knowledge; Knowledge lets me understand the ghost; restoring the House pushes back the Darkness.” Also test whether they can reach The First Letter without opening irrelevant screens or asking where to go next.
-
-## v0.4 — The Day’s Work — implemented, awaiting focused playtests
-
-Goal: prove the game’s repeatable return loop with one queue, one restored room, and one authored civic need.
-
-### Implemented playable scope
-
-- replace infinite auto-repeat with one ordered Work queue for Learn, Make, and Serve tasks
-- begin with three queue slots and preserve the existing eight-hour offline cap
-- give returning players a concise report of completed work, rewards, changes, and blockers
-- restore the Scriptorium as the next permanent House project
-- lower Campaign Darkness from 99% to 95% and then unlock Daily Needs
-- introduce one non-stacking three-point Daily Encroachment
-- author one need from the eastern school: decipher a damaged primer, make a copy, and donate it
-- preserve the original manuscript in the House while its copy serves the district
-- visibly relight the school as current Darkness returns from 98% to the 95% baseline
-- foreshadow Greed environmentally through hoarding or unfair exchange
-
-### Explicitly excluded
-
-- a separate Daily, Quest, or Tasks tab
-- stacked missed days, expiring needs, streaks, login rewards, or lost permanent progress
-- a separate Light, Civic Trust, Momentum, or daily-token currency
-- procedural daily generation or more than one active Daily Need
-- alternative solution paths before the single clear path is validated
-- a full market, trade simulation, mining, expeditions, or free city exploration
-- the complete Mathematics, Architecture, crafting, and room-restoration trees
-- humanoid Shadows or combat
-
-### v0.4 validation gate
+### v0.5 validation gate
 
 Test whether new and returning players can:
 
-- explain the difference between Learn, Make, Serve, and Restore;
-- predict what their queue will do while they are away;
-- understand that Daily Encroachment is temporary and Campaign Darkness is permanent;
-- resolve the school’s need without searching through multiple menus;
-- connect preserving the original, circulating the copy, and relighting the district;
-- feel guided by the daily pressure rather than punished by it;
-- choose useful work to queue before leaving and want to see its result later.
+- explain the difference between the Scholar’s Ledger and Current Work;
+- choose sensible work to leave running for several hours;
+- understand skill XP versus activity mastery;
+- see how Gathering and Scribing support Arabic knowledge circulation;
+- understand why Translation unlocks Mathematics and Mathematics unlocks Architecture;
+- accept the Scriptorium’s day-scale cost as motivating rather than arbitrary;
+- complete the eastern-school chain without believing one copy should be enough;
+- understand that Daily Duties are renewable while Chronicle, Civic, and Restoration goals persist;
+- feel rewarded by a long return report and want to optimize the next session.
 
-Do not add more Daily templates or economies until this loop is enjoyable with one.
+Do not tune away the grind merely because it is long. Tune it when actions feel empty, requirements feel arbitrary, rewards fail to compound, or players cannot form a useful plan.
 
-## v0.5 — Knowledge in Circulation
+## v0.5.1 — Grind quality and content depth
 
-Only after the v0.4 return loop is clear and enjoyable:
+Only after observing v0.5 playtests:
 
-- add a small authored pool of Daily Needs without changing the one-need cap
-- introduce a second solution to selected needs through a different discipline
-- expand Translation into Mathematics and Architecture
-- add a bounded workshop with recipes tied to visible civic purposes
-- restore additional rooms and building stages
-- show residents, craftspeople, and scholars returning to the district
-- introduce a civic market where copies and useful goods circulate fairly
-- make Greed the next environmental antagonist
-- reintroduce Al-Kindi through a revised Chronicle that solves a concrete restoration problem
+- add exact “run until this requirement is met” targets
+- add rare lost folios, marginalia, diagrams, memories, and technique discoveries
+- expand Arabic, Scribing, and Gathering to several meaningful action tiers
+- improve mastery checkpoint presentation and reward cadence
+- add authored variations to Daily Duties without changing their three-part structure
+- add clearer rate-per-hour and estimated-time displays
+- tune the Scriptorium and daily numbers using real return behavior
 
-## v0.6 — Knowledge Applied
+## v0.6 — Knowledge in Circulation
 
-Only after the restoration and circulation economies are enjoyable:
+- deepen Translation with several manuscript traditions and comparison activities
+- deepen Mathematics through arithmetic, geometry, algebra, and measurement
+- deepen Architecture through plans, components, rooms, and civic buildings
+- recruit the first copyist and introduce bounded Scriptorium automation
+- add a civic market where copies and useful goods circulate fairly
+- introduce Greed as the next environmental Shadow
+- reintroduce Al-Kindi through a Chronicle that solves a concrete mathematical problem
+
+## v0.7 — Knowledge Applied
 
 - introduce Famine through the surrounding district
-- apply agriculture, irrigation, preservation, Mathematics, medicine, Architecture, and engineering
-- introduce Herbalism and remedies through specific civic needs rather than a detached potion system
-- expand civic projects and fair distribution
+- add quarrying, mining, agriculture, irrigation, preservation, and engineering
+- introduce Herbalism and remedies through specific civic needs
+- add Workshop and Garden institutional automation
+- expand city restoration and fair distribution
 
-## Later story chapters
+## Later chapters
 
 - confront Fear through poetry, rhetoric, philosophy, testimony, and restored public gathering
-- confront Forgetting through a connected Grand Archive and the recovered history of the House
-- let the Daily Need system become stewardship after the campaign’s central mystery is resolved
+- confront Forgetting through a connected Grand Archive
+- investigate whether Shadow confrontations need debate, puzzles, institution-building, or another non-combat system
+- add accounts, cloud saves, cross-device progression, social systems, and monetization only after the single-player foundation is proven
 
-## Later design investigations
-
-- explore whether Shadow confrontations need a battle, debate, puzzle or institution-building system
-- do not create humanoid Shadow forms until that interaction model is approved
-- mining and regional expeditions
-- active Astronomy and Al-Battani
-- Optics and Ibn al-Haytham
-- additional disciplines and districts
-- scholar management
-- herbalism, medicine, and potions after Work can support genuinely different scholarly crafts
-- accounts, cloud saves and cross-device progression
-- social systems, community content and monetization
-
-Rule: expand because players want to know what happens next and because each new system strengthens the restoration fantasy.
+Rule: **the player grinds to recover knowledge, but progresses the story by putting that knowledge to work.**
