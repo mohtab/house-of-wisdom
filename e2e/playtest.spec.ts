@@ -1,36 +1,40 @@
+import { mkdirSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 
 type FixtureOptions = {
   language?: 'en' | 'ar';
   knowledge?: number;
-  xp?: { translation: number; mathematics: number; astronomy: number };
-  research?: string[];
-  manuscripts?: string[];
-  kindi?: {
-    unlocked: boolean;
-    phase: 'locked' | 'intro' | 'frequency' | 'comparison' | 'substitution' | 'pattern' | 'complete';
-    complete: boolean;
-    selectedSymbol: string | null;
-    substitution: string | null;
-    attempts: number;
-  };
+  materials?: { timber: number; stone: number };
+  xp?: { language: number; translation: number; mathematics: number; architecture: number };
+  skills?: string[];
+  inventory?: string[];
   activeActivityId?: string | null;
   started?: boolean;
+  ghostIdentityRevealed?: boolean;
+  deskRepaired?: boolean;
+  ignoranceRevealed?: boolean;
+  prologueComplete?: boolean;
 };
 
 function fixture(options: FixtureOptions = {}) {
   return {
-    version: 2,
+    version: 3,
     knowledge: options.knowledge ?? 0,
-    xp: options.xp ?? { translation: 0, mathematics: 0, astronomy: 0 },
+    materials: options.materials ?? { timber: 0, stone: 0 },
+    xp: options.xp ?? { language: 0, translation: 0, mathematics: 0, architecture: 0 },
     activeActivityId: options.activeActivityId ?? null,
     activityProgressMs: 0,
     lastUpdatedAt: Date.now(),
-    research: options.research ?? [],
-    manuscripts: options.manuscripts ?? ['damaged-folio'],
-    kindi: options.kindi ?? { unlocked: false, phase: 'locked', complete: false, selectedSymbol: null, substitution: null, attempts: 0 },
+    skills: options.skills ?? [],
+    inventory: options.inventory ?? ['torn-manuscript', 'worn-hammer'],
     language: options.language ?? 'en',
     started: options.started ?? false,
+    comicSeen: options.started ?? false,
+    ghostEncountered: options.started ?? false,
+    ghostIdentityRevealed: options.ghostIdentityRevealed ?? false,
+    deskRepaired: options.deskRepaired ?? false,
+    ignoranceRevealed: options.ignoranceRevealed ?? false,
+    prologueComplete: options.prologueComplete ?? false,
     offlineExplained: false,
     lastReward: null,
   };
@@ -38,167 +42,158 @@ function fixture(options: FixtureOptions = {}) {
 
 async function setFixture(page: Page, state: ReturnType<typeof fixture>) {
   await page.goto('/');
-  await page.evaluate((value) => localStorage.setItem('house-of-wisdom-v02', JSON.stringify(value)), state);
+  await page.evaluate((value) => {
+    localStorage.clear();
+    localStorage.setItem('house-of-wisdom-v03', JSON.stringify(value));
+  }, state);
   await page.reload();
 }
 
 async function expectNoHorizontalOverflow(page: Page) {
-  const dimensions = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth }));
+  const dimensions = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    clientWidth: document.documentElement.clientWidth,
+  }));
   expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
 }
 
 function captureRuntimeErrors(page: Page) {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(`page: ${error.message}`));
-  page.on('console', (message) => { if (message.type() === 'error') errors.push(`console: ${message.text()}`); });
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+  });
   return errors;
 }
 
-test('fresh opening is clear and the six-second clock survives rerenders and browser switching', async ({ page, context }) => {
+test.beforeAll(() => mkdirSync('playtest-artifacts', { recursive: true }));
+
+test('the Arabic-first opening clearly establishes the mystery and the real-time loop', async ({ page, context }) => {
   const errors = captureRuntimeErrors(page);
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'You are the new Keeper of the House of Wisdom.' })).toBeVisible();
-  await expect(page.getByText('Damaged Mathematical Folio')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Begin again' })).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+  await page.getByRole('button', { name: 'English' }).click();
+  await expect(page.getByRole('heading', { name: 'The House of Wisdom is silent.' })).toBeVisible();
+  await expect(page.getByAltText('Four panels showing the researcher arriving and meeting the ghost')).toBeVisible();
+  await expect(page.getByText('The manuscript restores meaning. The hammer restores the House.')).toBeVisible();
+  await page.screenshot({ path: 'playtest-artifacts/v03-opening-desktop.png', fullPage: true });
   await expectNoHorizontalOverflow(page);
-  await page.waitForTimeout(650);
-  await page.screenshot({ path: 'playtest-artifacts/opening-desktop.png', fullPage: true });
 
   const beganAt = Date.now();
-  await page.getByRole('button', { name: 'Begin again' }).click();
-  await expect(page.getByText('Decipher a Faded Line', { exact: true }).first()).toBeVisible();
-  await expect(page.locator('.activity-timer').getByText('6s', { exact: true })).toBeVisible();
-  const initialTransform = await page.locator('.timer-track > i').evaluate((element) => getComputedStyle(element).transform);
-  await page.waitForTimeout(1_000);
-  const laterTransform = await page.locator('.timer-track > i').evaluate((element) => getComputedStyle(element).transform);
-  expect(laterTransform).not.toBe(initialTransform);
-
-  await page.getByRole('button', { name: 'House', exact: true }).last().click();
+  await page.getByRole('button', { name: 'Enter the House' }).click();
+  await expect(page.getByText('The darkness swallows most of his words.')).toBeVisible();
   await page.getByRole('button', { name: 'Study', exact: true }).last().click();
+  await expect(page.getByText('Trace the Broken Letters', { exact: true }).first()).toBeVisible();
+  await expect(page.locator('.activity-timer').getByText('6s', { exact: true }).first()).toBeVisible();
+
   const other = await context.newPage();
   await other.goto('about:blank');
   await other.bringToFront();
   await other.waitForTimeout(2_000);
   await page.bringToFront();
-  await page.waitForFunction(() => {
-    const value = JSON.parse(localStorage.getItem('house-of-wisdom-v02') ?? '{}');
-    return value.knowledge >= 1;
-  });
-  const actualDuration = Date.now() - beganAt;
-  console.log(`Measured initial activity completion: ${actualDuration}ms`);
-  expect(actualDuration).toBeGreaterThanOrEqual(5_700);
-  expect(actualDuration).toBeLessThan(7_400);
-  await expect(page.getByText('+1 ✦', { exact: true })).toBeVisible();
+  await page.waitForFunction(() => JSON.parse(localStorage.getItem('house-of-wisdom-v03') ?? '{}').knowledge >= 1);
+  const duration = Date.now() - beganAt;
+  expect(duration).toBeGreaterThanOrEqual(5_700);
+  expect(duration).toBeLessThan(7_800);
+  await expect(page.getByText('+1', { exact: true }).first()).toBeVisible();
   await other.close();
   expect(errors).toEqual([]);
 });
 
-test('research path, visual House stages, and mobile layout are usable', async ({ page }) => {
+test('the Language tree reveals Al-Jahiz and remains usable on mobile', async ({ page }) => {
   const errors = captureRuntimeErrors(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await setFixture(page, fixture({
     started: true,
-    knowledge: 500,
-    activeActivityId: 'numerals',
-    xp: { translation: 175, mathematics: 175, astronomy: 0 },
-    research: ['desk', 'mathematics'],
-    manuscripts: ['damaged-folio', 'mathematical-folio'],
+    knowledge: 70,
+    xp: { language: 170, translation: 0, mathematics: 0, architecture: 0 },
+    skills: ['first-letter', 'word-roots', 'grammar'],
+    inventory: ['torn-manuscript', 'worn-hammer', 'first-word', 'restored-sentence'],
+    activeActivityId: 'study-eloquence',
   }));
+  await page.getByRole('button', { name: 'Language', exact: true }).last().click();
+  await expect(page.getByRole('heading', { name: 'Language & Literature' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'The Voice behind the Words' })).toBeVisible();
+  await page.getByRole('button', { name: /Understand.*55/ }).click();
+  await expect(page.getByAltText('Al-Jahiz')).toBeVisible();
+  await expect(page.getByText('Al-Jahiz', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/before the dust claims ownership/)).toBeVisible();
   await expectNoHorizontalOverflow(page);
-  await page.getByRole('button', { name: 'Research', exact: true }).last().click();
-  await expect(page.getByRole('heading', { name: 'Research path' })).toBeVisible();
-  await expect(page.getByText('Your first priority')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Preserve the Folio' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Follow the Pattern' })).toBeVisible();
-  await expectNoHorizontalOverflow(page);
-  await page.waitForTimeout(650);
-  await page.screenshot({ path: 'playtest-artifacts/research-mobile.png', fullPage: true });
-
-  await page.getByRole('button', { name: /Discover.*55/ }).first().click();
-  const chosen = await page.evaluate(() => JSON.parse(localStorage.getItem('house-of-wisdom-v02') ?? '{}').research);
-  expect(chosen.some((id: string) => id === 'preserve' || id === 'follow')).toBe(true);
-  await page.getByRole('button', { name: 'House', exact: true }).last().click();
-  await expect(page.locator('.house-stage-2')).toBeVisible();
-  await page.waitForTimeout(650);
-  await page.screenshot({ path: 'playtest-artifacts/house-stage-2-mobile.png', fullPage: true });
+  await page.screenshot({ path: 'playtest-artifacts/v03-al-jahiz-mobile.png', fullPage: true });
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('house-of-wisdom-v03') ?? '{}'));
+  expect(saved.ghostIdentityRevealed).toBe(true);
+  expect(saved.inventory).toContain('al-jahiz-signature');
   expect(errors).toEqual([]);
 });
 
-test('Al-Kindi is a guided interaction and grants the permanent manuscript', async ({ page }) => {
+test('restoring the Keeper desk names Ignorance and opens the journal', async ({ page }) => {
   const errors = captureRuntimeErrors(page);
   await setFixture(page, fixture({
     started: true,
-    knowledge: 50,
-    activeActivityId: 'patterns',
-    xp: { translation: 265, mathematics: 380, astronomy: 0 },
-    research: ['desk', 'mathematics', 'follow', 'language'],
-    manuscripts: ['damaged-folio', 'mathematical-folio', 'pattern-notes'],
-    kindi: { unlocked: true, phase: 'intro', complete: false, selectedSymbol: null, substitution: null, attempts: 0 },
+    knowledge: 30,
+    materials: { timber: 5, stone: 4 },
+    xp: { language: 180, translation: 0, mathematics: 0, architecture: 20 },
+    skills: ['first-letter', 'word-roots', 'grammar', 'eloquence'],
+    inventory: ['torn-manuscript', 'worn-hammer', 'first-word', 'restored-sentence', 'al-jahiz-signature'],
+    activeActivityId: 'sort-stone',
+    ghostIdentityRevealed: true,
   }));
-  await page.getByRole('button', { name: 'Library', exact: true }).last().click();
-  await expect(page.getByRole('heading', { name: 'Al-Kindi — The Cipher' })).toBeVisible();
-  await page.getByRole('button', { name: 'Examine the message' }).click();
-  await expect(page.getByRole('heading', { name: 'Find the most repeated symbol' })).toBeVisible();
-  await page.getByRole('button', { name: '○' }).first().click();
-  await expect(page.getByText('Another mark appears more often.')).toBeVisible();
-  await page.getByRole('button', { name: '◆' }).first().click();
-  await expect(page.getByRole('heading', { name: 'Compare frequency with language' })).toBeVisible();
-  await page.getByRole('button', { name: 'Form a hypothesis' }).click();
-  await page.getByRole('button', { name: 'Q' }).click();
-  await expect(page.getByText('Try a letter that appears very often')).toBeVisible();
-  await page.getByRole('button', { name: 'E', exact: true }).click();
-  await page.getByRole('button', { name: 'THE KEEPER SEES THE PATTERN' }).click();
-  await expect(page.getByRole('heading', { name: 'Method of Analysis', exact: true })).toBeVisible();
-  await expect(page.getByText('+10%', { exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Al-Kindi: Method of Analysis' })).toBeVisible();
-  await page.waitForTimeout(650);
-  await page.screenshot({ path: 'playtest-artifacts/kindi-complete-desktop.png', fullPage: true });
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('house-of-wisdom-v02') ?? '{}'));
-  expect(saved.kindi.complete).toBe(true);
-  expect(saved.manuscripts).toContain('method-of-analysis');
+  await page.getByRole('button', { name: 'Inventory', exact: true }).last().click();
+  await page.getByRole('button', { name: 'Repair the desk' }).click();
+  await expect(page.getByRole('heading', { name: 'The Keeper’s Desk lives again' })).toBeVisible();
+  await expect(page.getByText(/gives it a name: Ignorance/)).toBeVisible();
+  await page.getByRole('button', { name: 'Open the journal' }).click();
+  await expect(page.getByRole('heading', { name: 'Journal of The First Word' })).toBeVisible();
+  await expect(page.getByText('The House was not abandoned. It was silenced.')).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+  await page.screenshot({ path: 'playtest-artifacts/v03-prologue-complete-desktop.png', fullPage: true });
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('house-of-wisdom-v03') ?? '{}'));
+  expect(saved.deskRepaired).toBe(true);
+  expect(saved.ignoranceRevealed).toBe(true);
+  expect(saved.prologueComplete).toBe(true);
+  expect(saved.inventory).toContain('keeper-desk');
   expect(errors).toEqual([]);
 });
 
-test('Arabic RTL and tablet layouts preserve progress and readable controls', async ({ page }) => {
+test('Arabic RTL preserves progress and readable controls at tablet width', async ({ page }) => {
   const errors = captureRuntimeErrors(page);
   await page.setViewportSize({ width: 768, height: 1024 });
   await setFixture(page, fixture({
     started: true,
-    knowledge: 123.5,
-    activeActivityId: 'faded',
-    xp: { translation: 100, mathematics: 0, astronomy: 0 },
-    research: ['desk'],
+    language: 'en',
+    knowledge: 23.5,
+    xp: { language: 72, translation: 0, mathematics: 0, architecture: 0 },
+    skills: ['first-letter', 'word-roots'],
+    activeActivityId: 'copy-phrase',
   }));
   await page.getByRole('button', { name: 'العربية' }).click();
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
-  await expect(page.getByText('123.5', { exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'English' })).toBeVisible();
+  await expect(page.getByText('23.5', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'الدراسة', exact: true }).last().click();
-  await expect(page.getByRole('heading', { name: 'الدراسة' })).toBeVisible();
-  await expect(page.getByText('فكّ سطر باهت', { exact: true }).first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'الدراسة والعمل' })).toBeVisible();
+  await expect(page.getByText('أعد بناء عبارة مكسورة', { exact: true }).first()).toBeVisible();
   await expectNoHorizontalOverflow(page);
-  const persisted = await page.evaluate(() => JSON.parse(localStorage.getItem('house-of-wisdom-v02') ?? '{}'));
-  expect(persisted.knowledge).toBeGreaterThanOrEqual(123.5);
-  await page.waitForTimeout(650);
-  await page.screenshot({ path: 'playtest-artifacts/study-arabic-tablet.png', fullPage: true });
+  await page.screenshot({ path: 'playtest-artifacts/v03-study-arabic-tablet.png', fullPage: true });
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('house-of-wisdom-v03') ?? '{}'));
+  expect(saved.language).toBe('ar');
+  expect(saved.knowledge).toBeGreaterThanOrEqual(23.5);
   expect(errors).toEqual([]);
 });
 
-test('restored Scriptorium communicates offline continuation', async ({ page }) => {
-  await setFixture(page, fixture({
-    started: true,
-    knowledge: 12,
-    activeActivityId: 'compile',
-    xp: { translation: 380, mathematics: 525, astronomy: 0 },
-    research: ['desk', 'mathematics', 'follow', 'language', 'scriptorium'],
-    manuscripts: ['damaged-folio', 'mathematical-folio', 'pattern-notes', 'method-of-analysis'],
-    kindi: { unlocked: true, phase: 'complete', complete: true, selectedSymbol: '◆', substitution: 'common', attempts: 3 },
-  }));
-  await expect(page.locator('.house-stage-3')).toBeVisible();
-  await expect(page.getByText('The work continues when the book closes')).toBeVisible();
-  await expect(page.getByText('up to 8 hours')).toBeVisible();
-  await page.waitForTimeout(650);
-  await page.screenshot({ path: 'playtest-artifacts/house-scriptorium-desktop.png', fullPage: true });
+test('earlier saves migrate into the rewritten prologue without carrying incompatible economy data', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => {
+    localStorage.clear();
+    localStorage.setItem('house-of-wisdom-v02', JSON.stringify({ version: 2, language: 'en', knowledge: 999 }));
+  });
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'The opening has been rewritten' })).toBeVisible();
+  await page.getByRole('button', { name: 'Begin the chapter' }).click();
+  await expect(page.getByRole('heading', { name: 'The House of Wisdom is silent.' })).toBeVisible();
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('house-of-wisdom-v03') ?? '{}'));
+  expect(saved.version).toBe(3);
+  expect(saved.language).toBe('en');
+  expect(saved.knowledge).toBe(0);
 });

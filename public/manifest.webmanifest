@@ -3,7 +3,7 @@
   "short_name": "House of Wisdom",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#efe5ca",
-  "theme_color": "#0b1f24",
-  "description": "Rebuild a House of Knowledge through study, research, and historical Chronicles."
+  "background_color": "#10152b",
+  "theme_color": "#10152b",
+  "description": "Restore a silenced House of Wisdom through language, knowledge, and craft."
 }

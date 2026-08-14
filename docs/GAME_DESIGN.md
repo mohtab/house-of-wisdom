@@ -1,66 +1,80 @@
-# Game Design v0.2
+# Game Design v0.3 — The First Word
 
-House of Wisdom is a browser-first idle game. Version 0.2 validates the opening loop before the project expands.
+House of Wisdom is a browser-first idle restoration mystery set in an alternate-history Abbasid Baghdad. Version 0.3 tests whether a stronger conflict, character mystery, and distinct visual identity make the first 10–15 minutes compelling.
 
 ## Player fantasy
 
-The player is the new Keeper of a neglected House of Knowledge. They do not accumulate anonymous upgrades; they restore a visible institution by understanding and connecting ideas.
+The player is a timeless, nameless researcher seeking knowledge. They restore a visible institution by recovering meaning, applying disciplines, and rebuilding spaces that let knowledge serve people again.
+
+The player does not fight conventional monsters. The antagonists are environmental Shadows—Ignorance, Greed, Famine, Fear, and Forgetting—that damage language, trust, resources, institutions, and memory.
 
 ## First-session promise
 
-Open the game → understand the premise → begin Translation → watch clear progress → earn Knowledge and XP → restore the desk → unlock Mathematics → choose the House’s first priority → discover Al-Kindi → apply frequency analysis → restore the Scriptorium → understand that work continues offline.
+Arrive at the silent House → find manuscript and hammer → encounter an incomprehensible ghost → restore his speech through Language → reveal Al-Jahiz → salvage purposeful materials → repair the Keeper’s Desk → see the district answer with light → discover that Ignorance deliberately silenced the House.
 
-The desired emotional rhythm is: “One more thing just unlocked.”
+The desired emotional rhythm is mystery → comprehension → companionship → useful work → visible hope → larger threat.
 
 ## Core loop
 
-Study → produce Knowledge and discipline XP → research a connected idea → change the House → unlock a new activity or Chronicle → repeat.
+Decode a message → understand a need → study the required discipline → obtain purposeful materials → craft or repair → restore part of the House → attract people back → weaken a Shadow → recover a memory.
 
-## Current systems
+## Implemented systems
 
-- One currency: Knowledge.
-- Discipline XP and deterministic level thresholds.
-- Timestamp-driven auto-repeating activities.
-- A compact research path with completed, available, locked, and future nodes.
-- An exclusive first priority: strengthen Translation or Mathematics. The other path can reopen after the Scriptorium.
-- Four illustrated House stages.
-- Al-Kindi’s Cipher, using observation, frequency comparison, substitution, and pattern recognition.
-- Versioned local save and timestamp-based offline work capped at 8 hours.
-- English and Arabic designed as equal presentation modes.
+- Knowledge as the opening intellectual resource
+- Language, Translation, Mathematics, and Architecture XP foundations
+- deterministic level thresholds and connected Language insights
+- timestamp-driven auto-repeating study and salvage activities
+- timber and stone as bounded restoration materials
+- one repair recipe: the Keeper’s Desk
+- progressively restored ghost dialogue and Al-Jahiz identity reveal
+- one visible room restoration and district-light response
+- Ignorance as an environmental effect and narrative antagonist
+- versioned local save with v0.1/v0.2 migration
+- timestamp-based offline work capped at eight hours
+- Arabic-first presentation, full English support, and RTL layout
 
 ## Current content boundary
 
 Playable now:
 
+- four-panel arrival comic
+- Language and Literature: letters, word roots, grammar, and eloquence
+- four Language study activities
+- timber and stone salvage
+- Keeper’s Desk restoration
+- Al-Jahiz reveal and first journal chapter
+- Ignorance reveal and prologue ending
+
+Visible but not playable:
+
+- Poetry and Metre
 - Translation
-- Mathematics
-- The Keeper’s Desk
-- first-priority choice
-- Al-Kindi: The Cipher
-- Method of Analysis
-- the Scriptorium
-- offline return
+- Mathematics and Architecture
 
-Teased but not playable:
+Deferred:
 
-- the Observatory and Astronomy
-- Al-Battani: Tables of the Sky
+- full market, mining, expeditions, and free city exploration
+- complete crafting and Architecture trees
+- humanoid Shadows, combat, or battle system
+- revised Al-Kindi chapter and Astronomy
+- accounts, backend, cloud saves, multiplayer, monetization, achievements, and daily rewards
 
 ## Design rules
 
 - Game first, education second.
-- Teach through interaction, not trivia.
-- Keep the first meaningful action obvious.
+- Teach through interaction and consequences, not trivia.
+- Make every resource answer a visible need.
 - Always show what is running, how long remains, and what it rewards.
-- Use progressive disclosure instead of presenting every system at launch.
+- Keep movement short and task-directed.
+- Represent conflict environmentally before adding confrontation systems.
+- Show knowledge changing institutions and communities, not acting like magic.
 - Preserve one authoritative state model and one game clock.
-- Do not add currencies or systems to hide a pacing problem.
-- Expand only after the current first session proves enjoyable.
+- Expand only after new players want to know what happens next.
 
 ## Visual identity
 
-The interface combines scientific manuscript structure with a clean contemporary game UI. Ink, parchment, geometry, architecture, brass, and instruments form the shared language. Avoid generic dashboard cards, excessive gold, cartoon idle-game styling, and orientalist shorthand.
+The House uses deliberate 16-bit pixel art: moonlit indigo and dusty umber in the ruin, warming toward amber, turquoise, muted red, and green through restoration. A three-quarter cutaway room keeps the House as the visual focus. Najdi-inspired geometry, painted-door colours, borders, and pattern bands give the interface a distinctive regional graphic language.
 
-## Deferred
+This is a respectful creative synthesis, not a literal reconstruction of a lost building. Avoid generic fantasy-Arabia imagery, excessive gold, ornamental clutter, and orientalist shorthand. Arabic body text remains shaped, readable web text inside pixel-art frames.
 
-Optics, Ibn al-Haytham, a complete Al-Battani Chronicle, additional disciplines, expeditions, scholars, equipment, crafting trees, accounts, cloud saves, multiplayer, social systems, mods, monetization, achievements, and daily rewards remain outside v0.2.
+See [NARRATIVE_AND_ART_DIRECTION.md](NARRATIVE_AND_ART_DIRECTION.md), [VISUAL_ASSET_INVENTORY.md](VISUAL_ASSET_INVENTORY.md), and [ROADMAP.md](ROADMAP.md).
