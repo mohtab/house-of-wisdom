@@ -16,3 +16,9 @@ Thumbs.db
 *.swp
 .cache/
 .tmp/
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
+playwright-report/
+test-results/
+playtest-artifacts/

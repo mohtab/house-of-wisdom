@@ -1,5 +1,5 @@
-const CACHE = 'house-of-wisdom-v01';
-const SHELL = ['/', '/manifest.webmanifest'];
+const CACHE = 'house-of-wisdom-v02';
+const SHELL = ['/', '/manifest.webmanifest', '/favicon.svg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)));
   self.skipWaiting();
