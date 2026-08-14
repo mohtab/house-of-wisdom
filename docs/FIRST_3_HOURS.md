@@ -1,6 +1,6 @@
 # The First Session and the Next Three Hours
 
-Version 0.3.1 deliberately proves only the first 10–15 minutes. The wider three-hour arc remains a design map until new-player testing shows that the clearer quest and tutorial create curiosity and a desire to restore one more part of the House.
+Version 0.4 keeps the 10–15 minute prologue and implements the first complete loop beyond it. The broader three-hour arc remains gated by new-player and return-session testing.
 
 ## Prologue pacing guardrails
 
@@ -39,16 +39,21 @@ The deterministic simulation advances in one-second increments, chooses the newe
 - The repaired desk grants +10% Knowledge to Language work, giving the restoration a lasting mechanical effect.
 - No manuscript-copying economy, market, mining, generic loot, or secondary currencies are needed for this prologue.
 
-## Provisional next three hours
+## Implemented next slice — The Day’s Work
 
-After the v0.3.1 playtest gate, the next arc should expand from the Keeper’s Desk into a working hall:
+The first expansion proves the complete return loop with one room and one civic need:
 
-- Architecture opens from Mathematics, which in turn depends on Translation.
-- A bounded workshop introduces recipes with specific civic purposes.
-- The player stabilizes an arch, restores a manuscript niche, and returns one room to use.
-- Small background changes show residents and scholars returning to the district.
-- Originals remain archived while player-made copies can be traded or donated, turning circulation into the next light-restoration loop.
-- Greed appears through hoarded materials and unfair exchange, establishing the need for a civic market.
-- A revised Al-Kindi chapter demonstrates a method that directly helps the restoration.
+1. The player plans Learn, Make, and Serve work in one three-slot queue.
+2. Restoring the Scriptorium lowers permanent Campaign Darkness from 99% to 95% and unlocks Daily Needs.
+3. The first need comes from an eastern-district school whose damaged primer can no longer be used.
+4. Daily Encroachment temporarily raises current Darkness to 98%.
+5. The player queues a clear three-step plan: decipher the primer, make a copy while preserving the original, and donate the copy.
+6. Each completed step clears one encroachment point: 98% → 97% → 96% → 95%.
+7. The school visibly relights and its people respond; the Scriptorium and 95% baseline remain permanently restored.
+8. Repeatable work and Story projects remain available after the need is resolved. A later return presents a new need and a concise report of completed queued work.
 
-Do not build this expansion until 5–10 unmoderated players can complete The First Word, perceive Ignorance as an antagonist, and express a clear desire to continue.
+An unfinished need waits indefinitely and Daily Encroachment never stacks. Missing a day cannot undo restoration, destroy resources, or break a streak.
+
+The implementation deliberately postpones the full market, random daily generation, multiple solution paths, several rooms, and the broader Mathematics/Architecture economy. Greed is foreshadowed through circulation and hoarding, but does not yet have its own system.
+
+Do not expand beyond this proof until players understand the queue, perceive the daily pressure as motivating rather than punitive, enjoy applying Knowledge to a person’s need, and choose work they want completed before returning.

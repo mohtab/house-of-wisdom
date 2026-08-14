@@ -6,7 +6,9 @@ import {
   activityTiming,
   advanceGame,
   buyLanguageSkill,
+  campaignDarknessPercent,
   canRepairDesk,
+  canRestoreScriptorium,
   createInitialState,
   darknessPercent,
   deskRequirements,
@@ -20,6 +22,9 @@ import {
   objective,
   recommendedDestination,
   repairKeeperDesk,
+  queueDailyPlan,
+  restoreScriptorium,
+  scriptoriumRequirements,
   selectActivity,
   serializeGame,
   skillAvailable,
@@ -84,16 +89,21 @@ test('the displayed six-second activity completes at six real seconds and redire
   assert.equal(recommendedDestination(completed.state), 'knowledge');
 });
 
-test('completion rewards are granted exactly once and auto-repeat preserves the remainder', () => {
+test('one queued task completes exactly once and the queue stops when empty', () => {
   const once = advanceGame(working(0), 6_000);
   assert.equal(advanceGame(once.state, 6_000).summary.completions, 0);
   assert.equal(once.state.knowledge, 8);
+  assert.equal(once.state.activeActivityId, null);
 
-  const batch = advanceGame(skipTutorial(createInitialState(0, 'en'), 0), 18_250);
+  let queued = skipTutorial(createInitialState(0, 'en'), 0);
+  queued = selectActivity(queued, 'trace-letters', 0);
+  queued = selectActivity(queued, 'trace-letters', 0);
+  const batch = advanceGame(queued, 18_250);
   assert.equal(batch.summary.completions, 3);
   assert.equal(batch.state.knowledge, 3);
   assert.equal(batch.state.xp.language, 12);
-  assert.equal(batch.state.activityProgressMs, 250);
+  assert.equal(batch.state.activityProgressMs, 0);
+  assert.equal(batch.state.workQueue.length, 0);
 });
 
 test('Language XP crosses deterministic level thresholds', () => {
@@ -139,11 +149,16 @@ test('Eloquence reveals historical Al-Jahiz only after the full Language path', 
 });
 
 test('salvage activities award physical materials through the same timestamp clock', () => {
-  const selected = selectActivity(literateState(0), 'salvage-timber', 0);
+  let selected = literateState(0);
+  selected.workQueue = [];
+  selected.activeActivityId = null;
+  selected = selectActivity(selected, 'salvage-timber', 0);
+  selected = selectActivity(selected, 'salvage-timber', 0);
+  selected = selectActivity(selected, 'salvage-timber', 0);
   const result = advanceGame(selected, 40_000);
-  assert.equal(result.summary.completions, 5);
-  assert.equal(result.state.materials.timber, 5);
-  assert.equal(result.state.xp.architecture, 10);
+  assert.equal(result.summary.completions, 3);
+  assert.equal(result.state.materials.timber, 3);
+  assert.equal(result.state.xp.architecture, 6);
 });
 
 test('the Keeper’s Desk moves the permanent milestone from 100% to 99% exactly once', () => {
@@ -161,9 +176,87 @@ test('the Keeper’s Desk moves the permanent milestone from 100% to 99% exactly
   assert.equal(repaired.tutorialStep, 'complete');
   assert.deepEqual(repaired.lightMilestones, ['keeper-desk']);
   assert.equal(darknessPercent(repaired), 99);
-  assert.equal(objective(repaired, 'en'), 'Learn how circulating knowledge can relight Baghdad');
+  assert.equal(objective(repaired, 'en'), 'Restore the Scriptorium so knowledge can begin to travel');
   assert.match(storyDialogue(repaired, 'en')!.text, /Ignorance given weight/);
   assert.deepEqual(repairKeeperDesk(repaired, 0), repaired);
+});
+
+test('the Scriptorium creates a permanent 95% baseline and one three-step Daily Need', () => {
+  const state = literateState(0);
+  state.knowledge = deskRequirements.knowledge + scriptoriumRequirements.knowledge;
+  state.materials = {
+    timber: deskRequirements.timber + scriptoriumRequirements.timber,
+    stone: deskRequirements.stone + scriptoriumRequirements.stone,
+  };
+  const desk = repairKeeperDesk(state, 0);
+  desk.workQueue = [];
+  desk.activeActivityId = null;
+  assert.equal(canRestoreScriptorium(desk), true);
+
+  const restored = restoreScriptorium(desk, 0);
+  assert.equal(restored.scriptoriumRepaired, true);
+  assert.deepEqual(restored.lightMilestones, ['keeper-desk', 'scriptorium']);
+  assert.equal(campaignDarknessPercent(restored), 95);
+  assert.equal(darknessPercent(restored), 98);
+  assert.equal(restored.dailyNeedId, 'eastern-school');
+  assert.equal(restored.dailyEncroachment, 3);
+});
+
+test('Learn, Make, and Serve clear daily encroachment without risking permanent restoration', () => {
+  const state = literateState(0);
+  state.knowledge = deskRequirements.knowledge + scriptoriumRequirements.knowledge;
+  state.materials = {
+    timber: deskRequirements.timber + scriptoriumRequirements.timber,
+    stone: deskRequirements.stone + scriptoriumRequirements.stone,
+  };
+  const desk = repairKeeperDesk(state, 0);
+  desk.workQueue = [];
+  desk.activeActivityId = null;
+  let daily = restoreScriptorium(desk, 0);
+  daily = queueDailyPlan(daily, 0);
+  assert.deepEqual(daily.workQueue.map((entry) => entry.activityId), ['decipher-primer', 'copy-primer', 'deliver-primer']);
+
+  daily = advanceGame(daily, 10_000).state;
+  assert.equal(daily.dailyNeedStep, 1);
+  assert.equal(darknessPercent(daily), 97);
+  assert.equal(daily.knowledge, 5.5);
+
+  daily = advanceGame(daily, 22_000).state;
+  assert.equal(daily.dailyNeedStep, 2);
+  assert.equal(darknessPercent(daily), 96);
+  assert.equal(hasItem(daily, 'primer-copy'), true);
+
+  daily = advanceGame(daily, 30_000).state;
+  assert.equal(daily.dailyNeedId, null);
+  assert.equal(daily.dailyEncroachment, 0);
+  assert.equal(daily.schoolRelit, true);
+  assert.equal(hasItem(daily, 'primer-copy'), false);
+  assert.equal(darknessPercent(daily), 95);
+  assert.equal(campaignDarknessPercent(daily), 95);
+
+  const nextDay = advanceGame(daily, 24 * 60 * 60 * 1_000 + 30_000).state;
+  assert.equal(nextDay.dailyNeedId, 'eastern-school');
+  assert.equal(nextDay.dailyEncroachment, 3);
+  assert.equal(darknessPercent(nextDay), 98);
+  assert.equal(campaignDarknessPercent(nextDay), 95);
+});
+
+test('missed days never stack Daily Needs or increase Campaign Darkness', () => {
+  const state = literateState(0);
+  state.knowledge = deskRequirements.knowledge + scriptoriumRequirements.knowledge;
+  state.materials = {
+    timber: deskRequirements.timber + scriptoriumRequirements.timber,
+    stone: deskRequirements.stone + scriptoriumRequirements.stone,
+  };
+  const desk = repairKeeperDesk(state, 0);
+  desk.workQueue = [];
+  desk.activeActivityId = null;
+  const daily = restoreScriptorium(desk, 0);
+  const returned = advanceGame(daily, 7 * 24 * 60 * 60 * 1_000).state;
+  assert.equal(returned.dailyNeedId, 'eastern-school');
+  assert.equal(returned.dailyEncroachment, 3);
+  assert.equal(campaignDarknessPercent(returned), 95);
+  assert.equal(darknessPercent(returned), 98);
 });
 
 test('the restored desk modifier composes consistently online and in a batch', () => {
@@ -171,19 +264,24 @@ test('the restored desk modifier composes consistently online and in a batch', (
   state.deskRepaired = true;
   state.tutorialStep = 'complete';
   assert.equal(knowledgeMultiplier(state, 'language'), 1.1);
+  state.workQueue.push({ activityId: 'trace-letters' }, { activityId: 'trace-letters' });
   const batch = advanceGame(state, 60_000);
-  assert.equal(batch.state.knowledge, 11);
+  assert.equal(batch.state.knowledge, 3.3);
 
   let incremental = state;
-  for (let time = 6_000; time <= 60_000; time += 6_000) incremental = advanceGame(incremental, time).state;
+  for (let time = 6_000; time <= 18_000; time += 6_000) incremental = advanceGame(incremental, time).state;
   assert.equal(incremental.knowledge, batch.state.knowledge);
 });
 
-test('offline elapsed time uses timestamps and caps production at eight hours', () => {
-  const returned = advanceGame(working(10_000), 10_000 + OFFLINE_CAP_MS + 3_600_000);
+test('offline elapsed time honors the cap but never invents work beyond the queue', () => {
+  let state = working(10_000);
+  state = selectActivity(state, 'trace-letters', 10_000);
+  state = selectActivity(state, 'trace-letters', 10_000);
+  const returned = advanceGame(state, 10_000 + OFFLINE_CAP_MS + 3_600_000);
   assert.equal(returned.summary.appliedElapsedMs, OFFLINE_CAP_MS);
   assert.equal(returned.summary.cappedMs, 3_600_000);
-  assert.equal(returned.summary.completions, OFFLINE_CAP_MS / 6_000);
+  assert.equal(returned.summary.completions, 3);
+  assert.equal(returned.state.workQueue.length, 0);
 });
 
 test('switching activities reconciles elapsed work before starting a new clock', () => {
@@ -197,14 +295,37 @@ test('switching activities reconciles elapsed work before starting a new clock',
   assert.equal(advanceGame(switched, 14_000).summary.completions, 1);
 });
 
-test('save and load preserve current v0.3.1 state and reconcile only unsimulated time', () => {
-  const progressed = advanceGame(working(1_000), 7_000).state;
-  const loaded = loadGame(serializeGame(progressed), 10_000);
+test('save and load preserve the v0.4 queue and reconcile only unsimulated time', () => {
+  let progressed = working(1_000);
+  progressed = selectActivity(progressed, 'trace-letters', 1_000);
+  progressed = advanceGame(progressed, 4_000).state;
+  const loaded = loadGame(serializeGame(progressed), 5_000);
   assert.equal(loaded.migrated, false);
   assert.equal(loaded.state.version, GAME_VERSION);
-  assert.equal(loaded.state.knowledge, 8);
-  assert.equal(loaded.state.activityProgressMs, 3_000);
-  assert.equal(loadGame(serializeGame(loaded.state), 10_000).summary?.completions, 0);
+  assert.equal(loaded.state.knowledge, 0);
+  assert.equal(loaded.state.activityProgressMs, 4_000);
+  assert.equal(loaded.state.workQueue.length, 2);
+  assert.equal(loadGame(serializeGame(loaded.state), 5_000).summary?.completions, 0);
+});
+
+test('v0.3.1 saves migrate their active work into the first v0.4 queue slot', () => {
+  const raw = JSON.stringify({
+    version: 4, language: 'en', knowledge: 12, materials: { timber: 1, stone: 2 },
+    xp: { language: 40, translation: 0, mathematics: 0, architecture: 0 },
+    activeActivityId: 'restore-word', activityProgressMs: 2_000, lastUpdatedAt: 5_000,
+    skills: ['first-letter'], inventory: ['torn-manuscript', 'worn-hammer', 'first-word'],
+    lightMilestones: [], started: true, comicSeen: true, ghostEncountered: true,
+    ghostIdentityRevealed: false, deskRepaired: false, ignoranceRevealed: false,
+    prologueComplete: false, offlineExplained: false, tutorialStep: 'guided', tutorialSkipped: true,
+    lastReward: null,
+  });
+  const loaded = loadGame(raw, 5_000);
+  assert.equal(loaded.migrated, true);
+  assert.equal(loaded.fromVersion, 4);
+  assert.equal(loaded.state.version, GAME_VERSION);
+  assert.deepEqual(loaded.state.workQueue, [{ activityId: 'restore-word' }]);
+  assert.equal(loaded.state.activityProgressMs, 2_000);
+  assert.equal(loaded.state.knowledge, 12);
 });
 
 test('v0.3 saves preserve progress, gain the desk milestone, and skip forced onboarding', () => {

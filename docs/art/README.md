@@ -29,7 +29,7 @@ A combined visual language board containing:
 - Najdi-inspired border, textile and door motifs
 - environmental darkness and connection-recovery studies
 
-Prompt direction: 16-bit alternate-history Abbasid Baghdad restoration mystery; crisp limited-palette pixel art; moonlit indigo and dusty umber moving toward amber, turquoise, muted red and green; respectful regional synthesis; no humanoid enemies, combat, text or orientalist fantasy shorthand.
+Prompt direction: 16-bit alternate-history Abbasid Baghdad restoration mystery; crisp limited-palette pixel art; supernatural deep indigo Darkness and dusty umber lit only by locally earned lamps, moving toward amber, turquoise, muted red and green; respectful regional synthesis; no moon, stars, ordinary day/night cycle, humanoid enemies, combat, text or orientalist fantasy shorthand.
 
 ### `v0.3-opening-comic-concept-v1.png`
 

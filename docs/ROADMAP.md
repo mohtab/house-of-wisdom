@@ -83,28 +83,76 @@ Goal: make the conflict, quest, and first actions unmistakable without expanding
 
 Test whether new players can state, without prompting: “I am restoring light to Baghdad; work produces Knowledge; Knowledge lets me understand the ghost; restoring the House pushes back the Darkness.” Also test whether they can reach The First Letter without opening irrelevant screens or asking where to go next.
 
-## v0.4 — The House Returns
+## v0.4 — The Day’s Work — implemented, awaiting focused playtests
 
-Only after the v0.3.1 gate passes:
+Goal: prove the game’s repeatable return loop with one queue, one restored room, and one authored civic need.
 
-- expand Mathematics into Architecture
-- add a bounded crafting tree and workshop
+### Implemented playable scope
+
+- replace infinite auto-repeat with one ordered Work queue for Learn, Make, and Serve tasks
+- begin with three queue slots and preserve the existing eight-hour offline cap
+- give returning players a concise report of completed work, rewards, changes, and blockers
+- restore the Scriptorium as the next permanent House project
+- lower Campaign Darkness from 99% to 95% and then unlock Daily Needs
+- introduce one non-stacking three-point Daily Encroachment
+- author one need from the eastern school: decipher a damaged primer, make a copy, and donate it
+- preserve the original manuscript in the House while its copy serves the district
+- visibly relight the school as current Darkness returns from 98% to the 95% baseline
+- foreshadow Greed environmentally through hoarding or unfair exchange
+
+### Explicitly excluded
+
+- a separate Daily, Quest, or Tasks tab
+- stacked missed days, expiring needs, streaks, login rewards, or lost permanent progress
+- a separate Light, Civic Trust, Momentum, or daily-token currency
+- procedural daily generation or more than one active Daily Need
+- alternative solution paths before the single clear path is validated
+- a full market, trade simulation, mining, expeditions, or free city exploration
+- the complete Mathematics, Architecture, crafting, and room-restoration trees
+- humanoid Shadows or combat
+
+### v0.4 validation gate
+
+Test whether new and returning players can:
+
+- explain the difference between Learn, Make, Serve, and Restore;
+- predict what their queue will do while they are away;
+- understand that Daily Encroachment is temporary and Campaign Darkness is permanent;
+- resolve the school’s need without searching through multiple menus;
+- connect preserving the original, circulating the copy, and relighting the district;
+- feel guided by the daily pressure rather than punished by it;
+- choose useful work to queue before leaving and want to see its result later.
+
+Do not add more Daily templates or economies until this loop is enjoyable with one.
+
+## v0.5 — Knowledge in Circulation
+
+Only after the v0.4 return loop is clear and enjoyable:
+
+- add a small authored pool of Daily Needs without changing the one-need cap
+- introduce a second solution to selected needs through a different discipline
+- expand Translation into Mathematics and Architecture
+- add a bounded workshop with recipes tied to visible civic purposes
 - restore additional rooms and building stages
-- show residents, craftspeople and scholars returning to the district
-- introduce manuscript copying: originals remain archived while copies can be traded or donated
-- introduce the market as a civic system, with circulation—not hoarding—as its restoration purpose
+- show residents, craftspeople, and scholars returning to the district
+- introduce a civic market where copies and useful goods circulate fairly
 - make Greed the next environmental antagonist
-- reintroduce Al-Kindi through a revised Chronicle structure
+- reintroduce Al-Kindi through a revised Chronicle that solves a concrete restoration problem
 
-## v0.5 — Knowledge Applied
+## v0.6 — Knowledge Applied
 
-Only after the restoration economy is enjoyable:
+Only after the restoration and circulation economies are enjoyable:
 
 - introduce Famine through the surrounding district
-- apply agriculture, irrigation, preservation, mathematics, medicine and engineering
+- apply agriculture, irrigation, preservation, Mathematics, medicine, Architecture, and engineering
+- introduce Herbalism and remedies through specific civic needs rather than a detached potion system
 - expand civic projects and fair distribution
-- deepen poetry, rhetoric, philosophy and cultural restoration
-- prepare Fear and Forgetting as later Shadows
+
+## Later story chapters
+
+- confront Fear through poetry, rhetoric, philosophy, testimony, and restored public gathering
+- confront Forgetting through a connected Grand Archive and the recovered history of the House
+- let the Daily Need system become stewardship after the campaign’s central mystery is resolved
 
 ## Later design investigations
 

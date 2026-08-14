@@ -4,16 +4,22 @@ export type LocalizedText = Record<Language, string>;
 export type Material = 'timber' | 'stone';
 export type TutorialStep = 'comic' | 'inspect-manuscript' | 'first-reward' | 'first-insight' | 'guided' | 'complete';
 export type Destination = 'house' | 'work' | 'knowledge' | 'satchel' | 'memories';
+export type TaskPurpose = 'learn' | 'make' | 'serve';
+export type DailyNeedId = 'eastern-school';
+export type QueueEntry = { activityId: string };
 
-export const GAME_VERSION = 4 as const;
-export const SAVE_KEY = 'house-of-wisdom-v031';
+export const GAME_VERSION = 5 as const;
+export const SAVE_KEY = 'house-of-wisdom-v04';
+export const V4_SAVE_KEY = 'house-of-wisdom-v031';
 export const V3_SAVE_KEY = 'house-of-wisdom-v03';
 export const V2_SAVE_KEY = 'house-of-wisdom-v02';
 export const LEGACY_SAVE_KEY = 'house-of-wisdom-v01';
 export const OFFLINE_CAP_MS = 8 * 60 * 60 * 1_000;
+export const QUEUE_CAPACITY = 3;
 
 export const lightMilestoneWeights: Record<string, number> = {
   'keeper-desk': 1,
+  scriptorium: 4,
 };
 
 export type RewardEvent = {
@@ -32,6 +38,7 @@ export type GameState = {
   materials: Record<Material, number>;
   xp: Record<Discipline, number>;
   activeActivityId: string | null;
+  workQueue: QueueEntry[];
   activityProgressMs: number;
   lastUpdatedAt: number;
   skills: string[];
@@ -43,17 +50,25 @@ export type GameState = {
   ghostEncountered: boolean;
   ghostIdentityRevealed: boolean;
   deskRepaired: boolean;
+  scriptoriumRepaired: boolean;
   ignoranceRevealed: boolean;
   prologueComplete: boolean;
   offlineExplained: boolean;
   tutorialStep: TutorialStep;
   tutorialSkipped: boolean;
   lastReward: RewardEvent | null;
+  dailyNeedId: DailyNeedId | null;
+  dailyNeedStep: number;
+  dailyEncroachment: number;
+  dailyNeedGeneratedOn: string | null;
+  lastDailyResolvedOn: string | null;
+  schoolRelit: boolean;
 };
 
 export type Activity = {
   id: string;
   kind: 'study' | 'salvage';
+  purpose: TaskPurpose;
   discipline: Discipline;
   name: LocalizedText;
   description: LocalizedText;
@@ -65,46 +80,74 @@ export type Activity = {
   minLevel: number;
   requiresSkills?: string[];
   requiresIdentity?: boolean;
+  requiresScriptorium?: boolean;
+  dailyStep?: number;
+  knowledgeCost?: number;
+  requiresItem?: string;
+  rewardsItem?: string;
+  consumesItem?: string;
 };
 
 export const activities: Activity[] = [
   {
-    id: 'trace-letters', kind: 'study', discipline: 'language',
+    id: 'trace-letters', kind: 'study', purpose: 'learn', discipline: 'language',
     name: { en: 'Trace the Broken Letters', ar: 'تتبّع الحروف المكسورة' },
     description: { en: 'Compare the surviving marks in the torn manuscript.', ar: 'قارن العلامات الباقية في المخطوطة الممزقة.' },
     durationMs: 6_000, knowledge: 1, xp: 4, minLevel: 1,
   },
   {
-    id: 'restore-word', kind: 'study', discipline: 'language',
+    id: 'restore-word', kind: 'study', purpose: 'learn', discipline: 'language',
     name: { en: 'Restore a Missing Word', ar: 'استعد كلمة مفقودة' },
     description: { en: 'Use roots and context to recover one complete word.', ar: 'استخدم الجذور والسياق لاستعادة كلمة كاملة.' },
     durationMs: 9_000, knowledge: 2, xp: 6, minLevel: 2, requiresSkills: ['first-letter'],
   },
   {
-    id: 'copy-phrase', kind: 'study', discipline: 'language',
+    id: 'copy-phrase', kind: 'study', purpose: 'learn', discipline: 'language',
     name: { en: 'Rebuild a Broken Phrase', ar: 'أعد بناء عبارة مكسورة' },
     description: { en: 'Join words into a sentence the ghost can recognize.', ar: 'صِل الكلمات في جملة يستطيع الشبح تمييزها.' },
     durationMs: 13_000, knowledge: 4, xp: 8, minLevel: 3, requiresSkills: ['word-roots'],
   },
   {
-    id: 'study-eloquence', kind: 'study', discipline: 'language',
+    id: 'study-eloquence', kind: 'study', purpose: 'learn', discipline: 'language',
     name: { en: 'Listen for Meaning', ar: 'أنصت إلى المعنى' },
     description: { en: 'Recover tone, intent, and the humour hidden between words.', ar: 'استعد النبرة والقصد والفكاهة المختبئة بين الكلمات.' },
     durationMs: 17_000, knowledge: 6, xp: 10, minLevel: 4, requiresSkills: ['grammar'],
   },
   {
-    id: 'salvage-timber', kind: 'salvage', discipline: 'architecture',
+    id: 'salvage-timber', kind: 'salvage', purpose: 'make', discipline: 'architecture',
     name: { en: 'Recover Fallen Timber', ar: 'استخرج الخشب الساقط' },
     description: { en: 'Sort sound beams from splintered remains.', ar: 'افرز العوارض السليمة من البقايا المتكسرة.' },
     durationMs: 8_000, knowledge: 0.2, xp: 2, timber: 1, minLevel: 1,
     requiresSkills: ['eloquence'], requiresIdentity: true,
   },
   {
-    id: 'sort-stone', kind: 'salvage', discipline: 'architecture',
+    id: 'sort-stone', kind: 'salvage', purpose: 'make', discipline: 'architecture',
     name: { en: 'Sort Usable Stone', ar: 'افرز الحجارة الصالحة' },
     description: { en: 'Find blocks strong enough to brace the Keeper’s Desk.', ar: 'اعثر على حجارة تصلح لتثبيت مكتب القيّم.' },
     durationMs: 10_000, knowledge: 0.2, xp: 2, stone: 1, minLevel: 1,
     requiresSkills: ['eloquence'], requiresIdentity: true,
+  },
+  {
+    id: 'decipher-primer', kind: 'study', purpose: 'learn', discipline: 'language',
+    name: { en: 'Decipher the Damaged Primer', ar: 'فكّ رموز الكرّاس التالف' },
+    description: { en: 'Recover the lesson the eastern school can no longer read.', ar: 'استعد الدرس الذي لم تعد مدرسة الشرق قادرة على قراءته.' },
+    durationMs: 10_000, knowledge: 5, xp: 8, minLevel: 5,
+    requiresSkills: ['eloquence'], requiresScriptorium: true, dailyStep: 0,
+  },
+  {
+    id: 'copy-primer', kind: 'study', purpose: 'make', discipline: 'language',
+    name: { en: 'Copy a Working Primer', ar: 'انسخ كرّاساً صالحاً' },
+    description: { en: 'Preserve the original in the House and prepare a copy for the school.', ar: 'احفظ الأصل في الدار وأعدّ نسخة للمدرسة.' },
+    durationMs: 12_000, knowledge: 0, xp: 5, minLevel: 5, knowledgeCost: 4,
+    requiresSkills: ['eloquence'], requiresScriptorium: true, dailyStep: 1, rewardsItem: 'primer-copy',
+  },
+  {
+    id: 'deliver-primer', kind: 'study', purpose: 'serve', discipline: 'language',
+    name: { en: 'Deliver the Primer', ar: 'أوصل الكرّاس' },
+    description: { en: 'Place the copied lesson in the hands of the eastern school.', ar: 'ضع نسخة الدرس في أيدي مدرسة الشرق.' },
+    durationMs: 8_000, knowledge: 0, xp: 5, minLevel: 5,
+    requiresSkills: ['eloquence'], requiresScriptorium: true, dailyStep: 2,
+    requiresItem: 'primer-copy', consumesItem: 'primer-copy',
   },
 ];
 
@@ -177,13 +220,36 @@ export function levelProgress(xp: number) {
 export function hasSkill(state: GameState, id: string) { return state.skills.includes(id); }
 export function hasItem(state: GameState, id: string) { return state.inventory.includes(id); }
 
-export function darknessPercent(state: GameState) {
+export function campaignDarknessPercent(state: GameState) {
   const restored = state.lightMilestones.reduce((total, id) => total + (lightMilestoneWeights[id] ?? 0), 0);
   return Math.max(0, Math.round((100 - restored) * 10) / 10);
 }
 
+export function darknessPercent(state: GameState) {
+  return Math.min(100, campaignDarknessPercent(state) + state.dailyEncroachment);
+}
+
 function addLightMilestone(state: GameState, id: string) {
   if (lightMilestoneWeights[id] !== undefined && !state.lightMilestones.includes(id)) state.lightMilestones.push(id);
+}
+
+function localDateKey(now: number) {
+  const date = new Date(now);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function beginDailyNeed(state: GameState, now: number) {
+  if (!state.scriptoriumRepaired || state.dailyNeedId) return;
+  const today = localDateKey(now);
+  if (state.lastDailyResolvedOn === today) return;
+  state.dailyNeedId = 'eastern-school';
+  state.dailyNeedStep = 0;
+  state.dailyEncroachment = 3;
+  state.dailyNeedGeneratedOn = today;
+  state.schoolRelit = false;
 }
 
 export function createInitialState(now = Date.now(), language: Language = 'ar'): GameState {
@@ -193,6 +259,7 @@ export function createInitialState(now = Date.now(), language: Language = 'ar'):
     materials: { timber: 0, stone: 0 },
     xp: { language: 0, translation: 0, mathematics: 0, architecture: 0 },
     activeActivityId: null,
+    workQueue: [],
     activityProgressMs: 0,
     lastUpdatedAt: now,
     skills: [],
@@ -204,12 +271,19 @@ export function createInitialState(now = Date.now(), language: Language = 'ar'):
     ghostEncountered: false,
     ghostIdentityRevealed: false,
     deskRepaired: false,
+    scriptoriumRepaired: false,
     ignoranceRevealed: false,
     prologueComplete: false,
     offlineExplained: false,
     tutorialStep: 'comic',
     tutorialSkipped: false,
     lastReward: null,
+    dailyNeedId: null,
+    dailyNeedStep: 0,
+    dailyEncroachment: 0,
+    dailyNeedGeneratedOn: null,
+    lastDailyResolvedOn: null,
+    schoolRelit: false,
   };
 }
 
@@ -218,7 +292,11 @@ export function getActivity(id: string | null) { return activities.find((activit
 export function activityAvailable(state: GameState, activity: Activity) {
   return levelForXp(state.xp[activity.discipline]) >= activity.minLevel
     && (!activity.requiresSkills || activity.requiresSkills.every((id) => hasSkill(state, id)))
-    && (!activity.requiresIdentity || state.ghostIdentityRevealed);
+    && (!activity.requiresIdentity || state.ghostIdentityRevealed)
+    && (!activity.requiresScriptorium || state.scriptoriumRepaired)
+    && (activity.dailyStep === undefined || (state.dailyNeedId !== null && state.dailyNeedStep === activity.dailyStep))
+    && (activity.knowledgeCost === undefined || state.knowledge + Number.EPSILON >= activity.knowledgeCost)
+    && (!activity.requiresItem || hasItem(state, activity.requiresItem));
 }
 
 function roundResource(value: number) { return Math.round((value + Number.EPSILON) * 1_000_000) / 1_000_000; }
@@ -237,36 +315,96 @@ export type AdvanceSummary = {
   stone: number;
   completions: number;
   activityId: string | null;
+  completedActivityIds: string[];
+  darknessCleared: number;
+  blockedActivityId: string | null;
 };
+
+function syncActiveActivity(state: GameState) {
+  state.activeActivityId = state.workQueue[0]?.activityId ?? null;
+}
+
+function removeItem(state: GameState, id: string) {
+  const index = state.inventory.indexOf(id);
+  if (index >= 0) state.inventory.splice(index, 1);
+}
+
+function completeActivity(state: GameState, activity: Activity, now: number, summary: AdvanceSummary) {
+  const firstDiscovery = state.tutorialStep === 'first-reward' && activity.id === 'trace-letters';
+  const knowledge = roundResource(activity.knowledge * knowledgeMultiplier(state, activity.discipline) + (firstDiscovery ? 7 : 0));
+  const xp = activity.xp + (firstDiscovery ? 4 : 0);
+  const timber = activity.timber ?? 0;
+  const stone = activity.stone ?? 0;
+
+  if (activity.knowledgeCost) state.knowledge = roundResource(state.knowledge - activity.knowledgeCost);
+  if (activity.consumesItem) removeItem(state, activity.consumesItem);
+  state.knowledge = roundResource(state.knowledge + knowledge);
+  state.xp[activity.discipline] += xp;
+  state.materials.timber += timber;
+  state.materials.stone += stone;
+  if (activity.rewardsItem && !hasItem(state, activity.rewardsItem)) state.inventory.push(activity.rewardsItem);
+
+  if (activity.dailyStep !== undefined && state.dailyNeedId && state.dailyNeedStep === activity.dailyStep) {
+    state.dailyNeedStep += 1;
+    state.dailyEncroachment = Math.max(0, state.dailyEncroachment - 1);
+    summary.darknessCleared += 1;
+    if (state.dailyNeedStep >= 3) {
+      state.dailyNeedId = null;
+      state.dailyNeedGeneratedOn = null;
+      state.lastDailyResolvedOn = localDateKey(now);
+      state.schoolRelit = true;
+    }
+  }
+
+  state.lastReward = { activityId: activity.id, knowledge, xp, timber, stone, repetitions: 1, at: now };
+  summary.knowledge = roundResource(summary.knowledge + knowledge - (activity.knowledgeCost ?? 0));
+  summary.xp += xp;
+  summary.timber += timber;
+  summary.stone += stone;
+  summary.completions += 1;
+  summary.completedActivityIds.push(activity.id);
+  if (firstDiscovery) state.tutorialStep = 'first-insight';
+}
 
 export function advanceGame(input: GameState, now = Date.now(), capMs = OFFLINE_CAP_MS) {
   const state = structuredClone(input);
+  beginDailyNeed(state, now);
+  if (state.workQueue.length === 0 && state.activeActivityId) state.workQueue.push({ activityId: state.activeActivityId });
+  syncActiveActivity(state);
   const elapsedMs = Math.max(0, now - state.lastUpdatedAt);
   const appliedElapsedMs = Math.min(elapsedMs, Math.max(0, capMs));
-  const activity = getActivity(state.activeActivityId);
+  const firstActivity = getActivity(state.activeActivityId);
   const summary: AdvanceSummary = {
     elapsedMs, appliedElapsedMs, cappedMs: elapsedMs - appliedElapsedMs,
-    knowledge: 0, xp: 0, timber: 0, stone: 0, completions: 0, activityId: activity?.id ?? null,
+    knowledge: 0, xp: 0, timber: 0, stone: 0, completions: 0, activityId: firstActivity?.id ?? null,
+    completedActivityIds: [], darknessCleared: 0, blockedActivityId: null,
   };
 
-  if (activity && activityAvailable(state, activity)) {
-    const totalProgress = state.activityProgressMs + appliedElapsedMs;
-    const repetitions = Math.floor(totalProgress / activity.durationMs);
-    state.activityProgressMs = totalProgress % activity.durationMs;
-    if (repetitions > 0) {
-      const firstDiscovery = state.tutorialStep === 'first-reward' && activity.id === 'trace-letters';
-      const knowledge = roundResource(repetitions * activity.knowledge * knowledgeMultiplier(state, activity.discipline) + (firstDiscovery ? 7 : 0));
-      const xp = repetitions * activity.xp + (firstDiscovery ? 4 : 0);
-      const timber = repetitions * (activity.timber ?? 0);
-      const stone = repetitions * (activity.stone ?? 0);
-      state.knowledge = roundResource(state.knowledge + knowledge);
-      state.xp[activity.discipline] += xp;
-      state.materials.timber += timber;
-      state.materials.stone += stone;
-      state.lastReward = { activityId: activity.id, knowledge, xp, timber, stone, repetitions, at: now };
-      Object.assign(summary, { knowledge, xp, timber, stone, completions: repetitions });
-      if (state.tutorialStep === 'first-reward') state.tutorialStep = 'first-insight';
+  let remainingMs = appliedElapsedMs;
+  while (state.workQueue.length > 0) {
+    const activity = getActivity(state.workQueue[0].activityId);
+    if (!activity) {
+      state.workQueue.shift();
+      state.activityProgressMs = 0;
+      syncActiveActivity(state);
+      continue;
     }
+    if (!activityAvailable(state, activity)) {
+      summary.blockedActivityId = activity.id;
+      break;
+    }
+    const neededMs = activity.durationMs - state.activityProgressMs;
+    if (remainingMs < neededMs) {
+      state.activityProgressMs += remainingMs;
+      remainingMs = 0;
+      break;
+    }
+    remainingMs -= neededMs;
+    state.activityProgressMs = 0;
+    completeActivity(state, activity, now, summary);
+    state.workQueue.shift();
+    syncActiveActivity(state);
+    if (remainingMs <= 0) break;
   }
 
   state.lastUpdatedAt = now;
@@ -289,6 +427,7 @@ export function startGame(input: GameState, now = Date.now()) {
   state.comicSeen = true;
   state.ghostEncountered = true;
   state.activeActivityId = null;
+  state.workQueue = [];
   state.activityProgressMs = 0;
   state.lastUpdatedAt = now;
   state.tutorialStep = 'inspect-manuscript';
@@ -299,6 +438,7 @@ export function inspectManuscript(input: GameState, now = Date.now()) {
   const { state } = advanceGame(input, now);
   if (!state.started || state.tutorialStep !== 'inspect-manuscript') return state;
   state.activeActivityId = 'trace-letters';
+  state.workQueue = [{ activityId: 'trace-letters' }];
   state.activityProgressMs = 0;
   state.lastUpdatedAt = now;
   state.tutorialStep = 'first-reward';
@@ -312,6 +452,7 @@ export function skipTutorial(input: GameState, now = Date.now()) {
   advanced.tutorialSkipped = true;
   advanced.tutorialStep = advanced.prologueComplete ? 'complete' : 'guided';
   if (!advanced.activeActivityId && !advanced.prologueComplete) advanced.activeActivityId = 'trace-letters';
+  if (advanced.workQueue.length === 0 && advanced.activeActivityId) advanced.workQueue = [{ activityId: advanced.activeActivityId }];
   advanced.activityProgressMs = 0;
   advanced.lastUpdatedAt = now;
   return advanced;
@@ -320,8 +461,37 @@ export function skipTutorial(input: GameState, now = Date.now()) {
 export function selectActivity(input: GameState, id: string, now = Date.now()) {
   const { state } = advanceGame(input, now);
   const activity = getActivity(id);
-  if (!activity || !activityAvailable(state, activity) || state.activeActivityId === id) return state;
-  state.activeActivityId = id;
+  if (!activity || !activityAvailable(state, activity) || state.workQueue.length >= QUEUE_CAPACITY) return state;
+  state.workQueue.push({ activityId: id });
+  syncActiveActivity(state);
+  state.lastUpdatedAt = now;
+  return state;
+}
+
+export function cancelQueuedActivity(input: GameState, index: number, now = Date.now()) {
+  const { state } = advanceGame(input, now);
+  if (index <= 0 || index >= state.workQueue.length) return state;
+  state.workQueue.splice(index, 1);
+  syncActiveActivity(state);
+  state.lastUpdatedAt = now;
+  return state;
+}
+
+export function moveQueuedActivity(input: GameState, index: number, direction: -1 | 1, now = Date.now()) {
+  const { state } = advanceGame(input, now);
+  const target = index + direction;
+  if (index <= 0 || target <= 0 || index >= state.workQueue.length || target >= state.workQueue.length) return state;
+  [state.workQueue[index], state.workQueue[target]] = [state.workQueue[target], state.workQueue[index]];
+  syncActiveActivity(state);
+  state.lastUpdatedAt = now;
+  return state;
+}
+
+export function queueDailyPlan(input: GameState, now = Date.now()) {
+  const { state } = advanceGame(input, now);
+  if (state.dailyNeedId !== 'eastern-school' || state.dailyNeedStep !== 0 || state.workQueue.length !== 0) return state;
+  state.workQueue = ['decipher-primer', 'copy-primer', 'deliver-primer'].map((activityId) => ({ activityId }));
+  syncActiveActivity(state);
   state.activityProgressMs = 0;
   state.lastUpdatedAt = now;
   return state;
@@ -359,6 +529,7 @@ export function buyLanguageSkill(input: GameState, id: string, now = Date.now())
 }
 
 export const deskRequirements = { knowledge: 30, timber: 5, stone: 4 } as const;
+export const scriptoriumRequirements = { knowledge: 20, timber: 2, stone: 2 } as const;
 
 export function canRepairDesk(state: GameState) {
   return state.ghostIdentityRevealed && !state.deskRepaired
@@ -377,11 +548,33 @@ export function repairKeeperDesk(input: GameState, now = Date.now()) {
   state.ignoranceRevealed = true;
   state.prologueComplete = true;
   state.tutorialStep = 'complete';
+  state.workQueue = [{ activityId: 'study-eloquence' }];
   state.activeActivityId = 'study-eloquence';
   state.activityProgressMs = 0;
   state.lastUpdatedAt = now;
   addLightMilestone(state, 'keeper-desk');
   if (!hasItem(state, 'keeper-desk')) state.inventory.push('keeper-desk');
+  return state;
+}
+
+export function canRestoreScriptorium(state: GameState) {
+  return state.prologueComplete && state.ghostIdentityRevealed && !state.scriptoriumRepaired
+    && state.knowledge + Number.EPSILON >= scriptoriumRequirements.knowledge
+    && state.materials.timber >= scriptoriumRequirements.timber
+    && state.materials.stone >= scriptoriumRequirements.stone;
+}
+
+export function restoreScriptorium(input: GameState, now = Date.now()) {
+  const { state } = advanceGame(input, now);
+  if (!canRestoreScriptorium(state)) return state;
+  state.knowledge = roundResource(state.knowledge - scriptoriumRequirements.knowledge);
+  state.materials.timber -= scriptoriumRequirements.timber;
+  state.materials.stone -= scriptoriumRequirements.stone;
+  state.scriptoriumRepaired = true;
+  addLightMilestone(state, 'scriptorium');
+  if (!hasItem(state, 'scriptorium')) state.inventory.push('scriptorium');
+  beginDailyNeed(state, now);
+  state.lastUpdatedAt = now;
   return state;
 }
 
@@ -397,7 +590,7 @@ export function acknowledgeOffline(input: GameState, now = Date.now()) {
   return state;
 }
 
-export function houseStage(state: GameState) { return state.deskRepaired ? 1 : 0; }
+export function houseStage(state: GameState) { return state.scriptoriumRepaired ? 2 : state.deskRepaired ? 1 : 0; }
 
 export function storyProgress(state: GameState) {
   if (state.prologueComplete) return 100;
@@ -419,7 +612,16 @@ export function objective(state: GameState, language: Language) {
     if (ready) return ar ? `افهم: ${next.name.ar}` : `Understand: ${next.name.en}`;
     return ar ? 'اعمل عند مكتب المخطوطات لاستعادة كلام الشبح' : 'Work at the Manuscript Desk to restore the ghost’s speech';
   }
-  if (state.deskRepaired) return ar ? 'تعلّم كيف تنقل المعرفة النور إلى بغداد' : 'Learn how circulating knowledge can relight Baghdad';
+  if (state.scriptoriumRepaired && state.dailyNeedId) {
+    const daily = [
+      ar ? 'فكّ رموز كرّاس مدرسة الشرق' : 'Decipher the eastern school’s damaged primer',
+      ar ? 'انسخ كرّاساً للمدرسة' : 'Make a working copy for the school',
+      ar ? 'أوصل النسخة وأعد مصباح المدرسة' : 'Deliver the copy and relight the school',
+    ];
+    return daily[state.dailyNeedStep] ?? daily[2];
+  }
+  if (state.scriptoriumRepaired && state.schoolRelit) return ar ? 'أعدّ العمل النافع لعودة الظلام المقبلة' : 'Plan useful work for the Darkness’s next advance';
+  if (state.deskRepaired) return ar ? 'رمّم دار النسخ لتبدأ المعرفة بالانتقال' : 'Restore the Scriptorium so knowledge can begin to travel';
   if (state.materials.timber < deskRequirements.timber || state.materials.stone < deskRequirements.stone) {
     return ar ? 'استخرج الخشب والحجر لمكتب القيّم' : 'Recover timber and stone for the Keeper’s Desk';
   }
@@ -432,7 +634,8 @@ export function narrativePurpose(state: GameState, language: Language) {
   if (!state.started) return ar ? 'أعد النور إلى بغداد' : 'Bring light back to Baghdad';
   if (!state.ghostIdentityRevealed) return ar ? 'افهم حارس الدار المجهول' : 'Understand the unknown guardian of the House';
   if (!state.deskRepaired) return ar ? 'أعد أول موضع للمعرفة إلى العمل' : 'Return the first place of knowledge to use';
-  return ar ? 'انشر المعرفة لتدفع الجهل عن المدينة' : 'Circulate knowledge to push Ignorance from the city';
+  if (!state.scriptoriumRepaired) return ar ? 'أعد دار النسخ إلى العمل' : 'Return the Scriptorium to use';
+  return ar ? 'حوّل المعرفة إلى نور يخدم المدينة' : 'Turn knowledge into light that serves the city';
 }
 
 export function recommendedDestination(state: GameState): Destination {
@@ -444,7 +647,8 @@ export function recommendedDestination(state: GameState): Destination {
     if (next && skillAvailable(state, next) && next.cost !== null && state.knowledge + Number.EPSILON >= next.cost) return 'knowledge';
     return 'work';
   }
-  if (state.deskRepaired) return 'memories';
+  if (state.scriptoriumRepaired && state.dailyNeedId) return state.workQueue.length > 0 ? 'work' : 'house';
+  if (state.deskRepaired) return 'house';
   if (canRepairDesk(state)) return 'house';
   return 'work';
 }
@@ -492,10 +696,20 @@ export function storyDialogue(state: GameState, language: Language) {
     text: ar ? 'أبو عثمان عمرو بن بحر، وإن كنت تفضّل الاختصار: الجاحظ. والآن، هل ننقذ المكتب قبل أن يطالب الغبار بملكيته؟' : 'Abu Uthman Amr ibn Bahr—Al-Jahiz, if you prefer brevity. Now, shall we save the desk before the dust claims ownership?',
     note: ar ? 'ظهر توقيعه في هامش المخطوطة.' : 'His signature has appeared in the manuscript margin.', obscured: false,
   };
-  return {
+  if (!state.scriptoriumRepaired) return {
     voice: 'ghost' as const, speaker: ar ? 'الجاحظ' : 'Al-Jahiz',
     text: ar ? 'هذه ليست ليلة طويلة. إنها الجهل وقد صار له وزن. يعيش حين تبقى العقول والكتب والأفكار متباعدة. ولحسن الحظ، الكتب سيئة جداً في التزام الصمت بعد نسخها.' : 'This is no endless night. It is Ignorance given weight. It survives by keeping minds, books, and ideas apart. Fortunately, books are notoriously poor at staying quiet once copied.',
-    note: ar ? 'أجاب مصباح بعيد. تراجع ظلام بغداد إلى ٩٩٪.' : 'One distant lamp answers. Baghdad’s Darkness falls to 99%.', obscured: false,
+    note: ar ? 'دار النسخ هي مشروع الترميم التالي.' : 'The Scriptorium is the next restoration project.', obscured: false,
+  };
+  if (state.dailyNeedId) return {
+    voice: 'ghost' as const, speaker: ar ? 'الجاحظ' : 'Al-Jahiz',
+    text: ar ? 'مدرسة الشرق صامتة؛ أكل الجهل كلمات كرّاسها. فلنتعلّم ما ضاع، ونصنع نسخة، ثم نضعها في يد من يحتاجها. ثلاث مهام، وهذا أقل من عدد هوامشي عادةً.' : 'The eastern school is quiet; Ignorance has eaten the words from its primer. We learn what was lost, make a copy, then place it in the hands that need it. Three tasks—fewer than my usual footnotes.',
+    note: ar ? `بقي ${state.dailyEncroachment} من زحف الظلام اليوم.` : `${state.dailyEncroachment} points of today’s encroachment remain.`, obscured: false,
+  };
+  return {
+    voice: 'ghost' as const, speaker: ar ? 'الجاحظ' : 'Al-Jahiz',
+    text: ar ? 'عاد صوت إلى المدرسة ومصباح إلى نافذتها. يبدو أن المعرفة تجيد السفر حين نعطيها نسخة جيدة.' : 'A voice has returned to the school, and a lamp to its window. Knowledge travels rather well when we give it a good copy.',
+    note: ar ? 'بقي ترميم الدار عند ٩٥٪ من ظلام الحملة.' : 'The House remains secured at the 95% Campaign Darkness baseline.', obscured: false,
   };
 }
 
@@ -505,22 +719,33 @@ export const ghostDialogue = storyDialogue;
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null; }
 function uniqueStrings(value: unknown, fallback: string[] = []) { return Array.isArray(value) ? [...new Set(value.filter((item): item is string => typeof item === 'string'))] : fallback; }
 
-function stateFromRecord(value: Record<string, unknown>, now: number, migratedFromV3 = false): GameState {
+function stateFromRecord(value: Record<string, unknown>, now: number, sourceVersion: number = GAME_VERSION): GameState {
+  const migratedFromV3 = sourceVersion === 3;
   const initial = createInitialState(now, value.language === 'en' ? 'en' : 'ar');
   const xp = isRecord(value.xp) ? value.xp : {};
   const materials = isRecord(value.materials) ? value.materials : {};
   const skills = uniqueStrings(value.skills);
   const inventory = uniqueStrings(value.inventory, initial.inventory);
   const activeActivityId = typeof value.activeActivityId === 'string' && getActivity(value.activeActivityId) ? value.activeActivityId : null;
+  const storedQueue = Array.isArray(value.workQueue)
+    ? value.workQueue.flatMap((entry) => isRecord(entry) && typeof entry.activityId === 'string' && getActivity(entry.activityId) ? [{ activityId: entry.activityId }] : []).slice(0, QUEUE_CAPACITY)
+    : [];
+  const workQueue = storedQueue.length > 0 ? storedQueue : activeActivityId ? [{ activityId: activeActivityId }] : [];
   const deskRepaired = Boolean(value.deskRepaired);
+  const scriptoriumRepaired = Boolean(value.scriptoriumRepaired);
   const prologueComplete = Boolean(value.prologueComplete);
   const storedStep = typeof value.tutorialStep === 'string' && tutorialSteps.has(value.tutorialStep as TutorialStep)
     ? value.tutorialStep as TutorialStep : null;
   const lightMilestones = migratedFromV3
     ? (deskRepaired ? ['keeper-desk'] : [])
     : uniqueStrings(value.lightMilestones).filter((id) => lightMilestoneWeights[id] !== undefined);
+  if (scriptoriumRepaired && !lightMilestones.includes('scriptorium')) lightMilestones.push('scriptorium');
+  const dailyNeedId = value.dailyNeedId === 'eastern-school' ? value.dailyNeedId : null;
+  const dailyNeedStep = dailyNeedId && typeof value.dailyNeedStep === 'number' ? Math.min(2, Math.max(0, Math.floor(value.dailyNeedStep))) : 0;
+  const dailyEncroachment = dailyNeedId && typeof value.dailyEncroachment === 'number'
+    ? Math.min(3, Math.max(0, Math.floor(value.dailyEncroachment))) : dailyNeedId ? 3 - dailyNeedStep : 0;
 
-  return {
+  const state: GameState = {
     ...initial,
     knowledge: typeof value.knowledge === 'number' && Number.isFinite(value.knowledge) ? Math.max(0, value.knowledge) : 0,
     materials: {
@@ -533,7 +758,8 @@ function stateFromRecord(value: Record<string, unknown>, now: number, migratedFr
       mathematics: typeof xp.mathematics === 'number' ? Math.max(0, xp.mathematics) : 0,
       architecture: typeof xp.architecture === 'number' ? Math.max(0, xp.architecture) : 0,
     },
-    activeActivityId,
+    activeActivityId: workQueue[0]?.activityId ?? null,
+    workQueue,
     activityProgressMs: typeof value.activityProgressMs === 'number' ? Math.max(0, value.activityProgressMs) : 0,
     lastUpdatedAt: typeof value.lastUpdatedAt === 'number' && Number.isFinite(value.lastUpdatedAt) ? value.lastUpdatedAt : now,
     skills,
@@ -545,6 +771,7 @@ function stateFromRecord(value: Record<string, unknown>, now: number, migratedFr
     ghostEncountered: Boolean(value.ghostEncountered),
     ghostIdentityRevealed: Boolean(value.ghostIdentityRevealed) || skills.includes('eloquence'),
     deskRepaired,
+    scriptoriumRepaired,
     ignoranceRevealed: Boolean(value.ignoranceRevealed),
     prologueComplete,
     offlineExplained: Boolean(value.offlineExplained),
@@ -559,17 +786,25 @@ function stateFromRecord(value: Record<string, unknown>, now: number, migratedFr
       && typeof value.lastReward.repetitions === 'number'
       && typeof value.lastReward.at === 'number'
       ? value.lastReward as RewardEvent : null,
+    dailyNeedId,
+    dailyNeedStep,
+    dailyEncroachment,
+    dailyNeedGeneratedOn: typeof value.dailyNeedGeneratedOn === 'string' ? value.dailyNeedGeneratedOn : null,
+    lastDailyResolvedOn: typeof value.lastDailyResolvedOn === 'string' ? value.lastDailyResolvedOn : null,
+    schoolRelit: Boolean(value.schoolRelit),
   };
+  beginDailyNeed(state, now);
+  return state;
 }
 
 function sanitizeState(value: unknown, now: number): GameState | null {
   if (!isRecord(value) || value.version !== GAME_VERSION) return null;
-  return stateFromRecord(value, now);
+  return stateFromRecord(value, now, GAME_VERSION);
 }
 
 function migrateEarlierState(value: unknown, now: number): GameState | null {
   if (!isRecord(value)) return null;
-  if (value.version === 3) return stateFromRecord(value, now, true);
+  if (value.version === 4 || value.version === 3) return stateFromRecord(value, now, value.version);
   if (value.version === 1 || value.version === 2) return createInitialState(now, value.language === 'en' ? 'en' : 'ar');
   return null;
 }

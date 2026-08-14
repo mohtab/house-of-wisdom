@@ -139,6 +139,14 @@ Sound is listed for coordination but is not part of the first visual-production 
 
 ## P2 — House restoration expansion
 
+- one ordered Work queue with clear Learn / Make / Serve markers, three visible slots, and reorder states
+- one House-level Daily Need card with a three-step progress chain
+- Campaign Darkness baseline marker plus three temporary Daily Encroachment segments
+- compact offline return report for completed tasks, gains, changes, and blockers
+- eastern-school dark, responding, and relit district states
+- Scriptorium ruined, under-repair, and restored states
+- preserved original manuscript and player-made copy item variants
+
 - hall restoration stages: ruin, cleared, stabilized, working and flourishing
 - Scriptorium, workshop, library and courtyard station sets
 - Architecture skill-tree icons

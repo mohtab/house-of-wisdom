@@ -9,39 +9,55 @@ type FixtureOptions = {
   skills?: string[];
   inventory?: string[];
   activeActivityId?: string | null;
+  workQueue?: { activityId: string }[];
   started?: boolean;
   ghostIdentityRevealed?: boolean;
   deskRepaired?: boolean;
   ignoranceRevealed?: boolean;
   prologueComplete?: boolean;
+  scriptoriumRepaired?: boolean;
+  dailyNeedId?: 'eastern-school' | null;
+  dailyNeedStep?: number;
+  dailyEncroachment?: number;
+  schoolRelit?: boolean;
 };
 
 function fixture(options: FixtureOptions = {}) {
   const started = options.started ?? true;
   const deskRepaired = options.deskRepaired ?? false;
+  const scriptoriumRepaired = options.scriptoriumRepaired ?? false;
+  const workQueue = options.workQueue ?? (options.activeActivityId ? [{ activityId: options.activeActivityId }] : []);
   return {
-    version: 4,
+    version: 5,
     knowledge: options.knowledge ?? 0,
     materials: options.materials ?? { timber: 0, stone: 0 },
     xp: options.xp ?? { language: 0, translation: 0, mathematics: 0, architecture: 0 },
-    activeActivityId: options.activeActivityId ?? null,
+    activeActivityId: workQueue[0]?.activityId ?? null,
+    workQueue,
     activityProgressMs: 0,
     lastUpdatedAt: Date.now(),
     skills: options.skills ?? [],
     inventory: options.inventory ?? ['torn-manuscript', 'worn-hammer'],
-    lightMilestones: deskRepaired ? ['keeper-desk'] : [],
+    lightMilestones: scriptoriumRepaired ? ['keeper-desk', 'scriptorium'] : deskRepaired ? ['keeper-desk'] : [],
     language: options.language ?? 'en',
     started,
     comicSeen: started,
     ghostEncountered: started,
     ghostIdentityRevealed: options.ghostIdentityRevealed ?? false,
     deskRepaired,
+    scriptoriumRepaired,
     ignoranceRevealed: options.ignoranceRevealed ?? deskRepaired,
     prologueComplete: options.prologueComplete ?? deskRepaired,
     offlineExplained: false,
     tutorialStep: deskRepaired ? 'complete' : started ? 'guided' : 'comic',
     tutorialSkipped: started,
     lastReward: null,
+    dailyNeedId: options.dailyNeedId ?? null,
+    dailyNeedStep: options.dailyNeedStep ?? 0,
+    dailyEncroachment: options.dailyEncroachment ?? 0,
+    dailyNeedGeneratedOn: null,
+    lastDailyResolvedOn: null,
+    schoolRelit: options.schoolRelit ?? false,
   };
 }
 
@@ -49,7 +65,7 @@ async function setFixture(page: Page, state: ReturnType<typeof fixture>) {
   await page.goto('/');
   await page.evaluate((value) => {
     localStorage.clear();
-    localStorage.setItem('house-of-wisdom-v031', JSON.stringify(value));
+    localStorage.setItem('house-of-wisdom-v04', JSON.stringify(value));
   }, state);
   await page.reload();
 }
@@ -95,7 +111,7 @@ test('the comic and speech bubble guide a fresh player to the first insight', as
   await expect(page.getByRole('heading', { name: 'Manuscript Desk' })).toBeVisible();
   await expect(page.getByText('First discovery bonus')).toBeVisible();
 
-  await page.waitForFunction(() => JSON.parse(localStorage.getItem('house-of-wisdom-v031') ?? '{}').knowledge >= 8, null, { timeout: 8_000 });
+  await page.waitForFunction(() => JSON.parse(localStorage.getItem('house-of-wisdom-v04') ?? '{}').knowledge >= 8, null, { timeout: 8_000 });
   await page.locator('.navigation').getByRole('button', { name: 'House', exact: true }).click();
   await expect(page.getByText('The work produced Knowledge. The first insight may restore one word of his voice.')).toBeVisible();
   await page.locator('.speech-bubble').getByRole('button', { name: 'Open Knowledge' }).click();
@@ -103,8 +119,8 @@ test('the comic and speech bubble guide a fresh player to the first insight', as
   await page.getByRole('button', { name: /Understand.*8/ }).click();
   await expect(page.getByText('Read.', { exact: true })).toBeVisible();
 
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('house-of-wisdom-v031') ?? '{}'));
-  expect(saved.version).toBe(4);
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('house-of-wisdom-v04') ?? '{}'));
+  expect(saved.version).toBe(5);
   expect(saved.skills).toContain('first-letter');
   expect(saved.inventory).toContain('first-word');
   expect(saved.tutorialStep).toBe('guided');
@@ -155,9 +171,56 @@ test('restoring the Keeper’s Desk names Ignorance, records the memory, and low
   await expect(page.getByText('The House was not abandoned. It was silenced.')).toBeVisible();
   await expect(page.getByLabel('99% Darkness').first()).toBeVisible();
   await page.screenshot({ path: 'playtest-artifacts/v031-prologue-complete-desktop.png', fullPage: true });
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('house-of-wisdom-v031') ?? '{}'));
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('house-of-wisdom-v04') ?? '{}'));
   expect(saved.lightMilestones).toEqual(['keeper-desk']);
   expect(saved.tutorialStep).toBe('complete');
+  expect(errors).toEqual([]);
+});
+
+test('the Scriptorium queues one Daily Need and Learn, Make, Serve return Darkness to its permanent baseline', async ({ page }) => {
+  const errors = captureRuntimeErrors(page);
+  await setFixture(page, fixture({
+    knowledge: 20,
+    materials: { timber: 2, stone: 2 },
+    xp: { language: 180, translation: 0, mathematics: 0, architecture: 20 },
+    skills: ['first-letter', 'word-roots', 'grammar', 'eloquence'],
+    inventory: ['torn-manuscript', 'worn-hammer', 'first-word', 'restored-sentence', 'al-jahiz-signature', 'keeper-desk'],
+    ghostIdentityRevealed: true,
+    deskRepaired: true,
+    prologueComplete: true,
+  }));
+
+  await page.getByRole('button', { name: 'Restore the Scriptorium' }).click();
+  await expect(page.getByRole('heading', { name: 'The Scriptorium returns to use' })).toBeVisible();
+  await expect(page.getByText(/Campaign Darkness falls permanently to 95%/)).toBeVisible();
+  await page.getByRole('dialog').getByRole('button', { name: 'Queue today’s plan' }).click();
+  await expect(page.getByRole('heading', { name: 'Work queue' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '3 of 3 tasks' })).toBeVisible();
+  await expect(page.getByText('Decipher the Damaged Primer').first()).toBeVisible();
+  await expect(page.getByText('Copy a Working Primer').first()).toBeVisible();
+  await expect(page.getByText('Deliver the Primer').first()).toBeVisible();
+  await page.screenshot({ path: 'playtest-artifacts/v04-daily-queue-desktop.png', fullPage: true });
+
+  await page.evaluate(() => {
+    const key = 'house-of-wisdom-v04';
+    const state = JSON.parse(localStorage.getItem(key) ?? '{}');
+    state.lastUpdatedAt = Date.now() - 31_000;
+    localStorage.setItem(key, JSON.stringify(state));
+  });
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '3 queued tasks completed' })).toBeVisible();
+  await expect(page.getByText('Daily Darkness retreated by 3.')).toBeVisible();
+  await page.getByRole('button', { name: 'Return to the House' }).click();
+  await expect(page.getByRole('heading', { name: 'The eastern school is relit' })).toBeVisible();
+  await expect(page.getByLabel('95% Darkness').first()).toBeVisible();
+  await page.screenshot({ path: 'playtest-artifacts/v04-daily-resolved-desktop.png', fullPage: true });
+
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('house-of-wisdom-v04') ?? '{}'));
+  expect(saved.workQueue).toEqual([]);
+  expect(saved.dailyEncroachment).toBe(0);
+  expect(saved.schoolRelit).toBe(true);
+  expect(saved.lightMilestones).toEqual(['keeper-desk', 'scriptorium']);
+  await expectNoHorizontalOverflow(page);
   expect(errors).toEqual([]);
 });
 
@@ -174,11 +237,11 @@ test('Arabic RTL preserves progress and Work controls at tablet width', async ({
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
   await expect(page.getByText('23.5', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'العمل', exact: true }).last().click();
-  await expect(page.getByRole('heading', { name: 'العمل' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'طابور العمل' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'مكتب المخطوطات' })).toBeVisible();
   await expectNoHorizontalOverflow(page);
   await page.screenshot({ path: 'playtest-artifacts/v031-work-arabic-tablet.png', fullPage: true });
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('house-of-wisdom-v031') ?? '{}'));
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('house-of-wisdom-v04') ?? '{}'));
   expect(saved.language).toBe('ar');
   expect(saved.knowledge).toBeGreaterThanOrEqual(23.5);
   expect(errors).toEqual([]);
@@ -206,8 +269,8 @@ test('v0.3 saves preserve progress and skip the forced tutorial', async ({ page 
   await page.getByRole('button', { name: 'Continue the journey' }).click();
   await expect(page.getByText('23.5', { exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'The First Word' })).toBeVisible();
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('house-of-wisdom-v031') ?? '{}'));
-  expect(saved.version).toBe(4);
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('house-of-wisdom-v04') ?? '{}'));
+  expect(saved.version).toBe(5);
   expect(saved.skills).toEqual(['first-letter', 'word-roots']);
   expect(saved.tutorialSkipped).toBe(true);
   expect(saved.tutorialStep).toBe('guided');

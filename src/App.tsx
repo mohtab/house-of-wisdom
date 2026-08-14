@@ -4,13 +4,17 @@ import {
   SAVE_KEY,
   V2_SAVE_KEY,
   V3_SAVE_KEY,
+  V4_SAVE_KEY,
   acknowledgeOffline,
   activities,
   activityAvailable,
   activityTiming,
   advanceGame,
   buyLanguageSkill,
+  campaignDarknessPercent,
+  cancelQueuedActivity,
   canRepairDesk,
+  canRestoreScriptorium,
   createInitialState,
   darknessPercent,
   deskRequirements,
@@ -22,11 +26,15 @@ import {
   languageSkills,
   levelProgress,
   loadGame,
+  moveQueuedActivity,
   narrativePurpose,
   nextLanguageSkill,
   objective,
   recommendedDestination,
   repairKeeperDesk,
+  queueDailyPlan,
+  restoreScriptorium,
+  scriptoriumRequirements,
   selectActivity,
   serializeGame,
   setLanguage,
@@ -48,11 +56,11 @@ type Tab = 'house' | 'work' | 'knowledge';
 const ui = {
   en: {
     house: 'House', work: 'Work', knowledgeTab: 'Knowledge', knowledge: 'Knowledge', timber: 'Timber', stone: 'Stone',
-    purpose: 'Purpose', next: 'Next action', level: 'Level', remaining: 'remaining', active: 'Active', select: 'Begin',
+    purpose: 'Purpose', next: 'Next action', level: 'Level', remaining: 'remaining', active: 'Running', select: 'Add to queue',
   },
   ar: {
     house: 'الدار', work: 'العمل', knowledgeTab: 'المعرفة', knowledge: 'المعرفة', timber: 'الخشب', stone: 'الحجر',
-    purpose: 'الغاية', next: 'الخطوة التالية', level: 'المستوى', remaining: 'متبقية', active: 'جارٍ', select: 'ابدأ',
+    purpose: 'الغاية', next: 'الخطوة التالية', level: 'المستوى', remaining: 'متبقية', active: 'جارٍ', select: 'أضف للطابور',
   },
 };
 
@@ -63,16 +71,19 @@ const inventoryCopy: Record<string, { title: Record<Language, string>; note: Rec
   'restored-sentence': { title: { en: 'A Restored Sentence', ar: 'جملة مستعادة' }, note: { en: 'The ghost can speak—and apparently complain.', ar: 'يستطيع الشبح الكلام، ويبدو أنه يستطيع التذمر أيضاً.' }, icon: '۞' },
   'al-jahiz-signature': { title: { en: 'Al-Jahiz’s Signature', ar: 'توقيع الجاحظ' }, note: { en: 'Amr ibn Bahr. The unknown ghost has a name.', ar: 'عمرو بن بحر. صار للشبح المجهول اسم.' }, icon: 'ج' },
   'keeper-desk': { title: { en: 'The Keeper’s Desk', ar: 'مكتب القيّم' }, note: { en: 'The first working place—and the city’s first returned light.', ar: 'أول موضع يعود إلى العمل، وأول نور يعود إلى المدينة.' }, icon: '⌂' },
+  scriptorium: { title: { en: 'The Restored Scriptorium', ar: 'دار النسخ المرمّمة' }, note: { en: 'Originals remain safe here while useful copies travel into the city.', ar: 'تبقى الأصول آمنة هنا بينما تنتقل النسخ النافعة إلى المدينة.' }, icon: '▤' },
+  'primer-copy': { title: { en: 'Copied Primer', ar: 'نسخة الكرّاس' }, note: { en: 'A readable copy prepared for the eastern school.', ar: 'نسخة مقروءة أُعدّت لمدرسة الشرق.' }, icon: 'ا' },
 };
 
 const navIcons: Record<Tab, string> = { house: '⌂', work: '▤', knowledge: 'ا' };
 
 function readInitialSave() {
   const current = localStorage.getItem(SAVE_KEY);
-  const v3 = current ? null : localStorage.getItem(V3_SAVE_KEY);
-  const v2 = current || v3 ? null : localStorage.getItem(V2_SAVE_KEY);
-  const legacy = current || v3 || v2 ? null : localStorage.getItem(LEGACY_SAVE_KEY);
-  return loadGame(current ?? v3 ?? v2 ?? legacy, Date.now());
+  const v4 = current ? null : localStorage.getItem(V4_SAVE_KEY);
+  const v3 = current || v4 ? null : localStorage.getItem(V3_SAVE_KEY);
+  const v2 = current || v4 || v3 ? null : localStorage.getItem(V2_SAVE_KEY);
+  const legacy = current || v4 || v3 || v2 ? null : localStorage.getItem(LEGACY_SAVE_KEY);
+  return loadGame(current ?? v4 ?? v3 ?? v2 ?? legacy, Date.now());
 }
 
 function formatResource(value: number) { return Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1); }
@@ -106,6 +117,7 @@ export default function App() {
   );
   const [migrationNotice, setMigrationNotice] = useState(boot.migrated);
   const [restorationNotice, setRestorationNotice] = useState(false);
+  const [scriptoriumNotice, setScriptoriumNotice] = useState(false);
   const visualNow = useVisualClock(Boolean(state.activeActivityId));
   const lang = state.language;
   const t = ui[lang];
@@ -115,12 +127,13 @@ export default function App() {
   useEffect(() => {
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = lang;
-    document.title = lang === 'ar' ? 'بيت الحكمة — الكلمة الأولى' : 'House of Wisdom — The First Word';
+    document.title = lang === 'ar' ? 'بيت الحكمة — عمل اليوم' : 'House of Wisdom — The Day’s Work';
   }, [lang]);
 
   useEffect(() => {
     localStorage.setItem(SAVE_KEY, serializeGame(state));
     if (boot.migrated) {
+      localStorage.removeItem(V4_SAVE_KEY);
       localStorage.removeItem(V3_SAVE_KEY);
       localStorage.removeItem(V2_SAVE_KEY);
       localStorage.removeItem(LEGACY_SAVE_KEY);
@@ -179,6 +192,18 @@ export default function App() {
     setTab('house');
   };
 
+  const repairScriptorium = () => {
+    if (!canRestoreScriptorium(state)) return;
+    setState((current) => restoreScriptorium(current, Date.now()));
+    setScriptoriumNotice(true);
+    setTab('house');
+  };
+
+  const queueNeed = () => {
+    setState((current) => queueDailyPlan(current, Date.now()));
+    setTab('work');
+  };
+
   const openMemories = () => {
     setTab('house');
     setMemoriesExpanded(true);
@@ -202,7 +227,7 @@ export default function App() {
   const resetSession = () => {
     const message = lang === 'ar' ? 'هل تريد بدء رحلة جديدة؟ سيُحذف التقدم المحفوظ على هذا الجهاز.' : 'Begin a new journey? This removes progress saved on this device.';
     if (!window.confirm(message)) return;
-    [SAVE_KEY, V3_SAVE_KEY, V2_SAVE_KEY, LEGACY_SAVE_KEY].forEach((key) => localStorage.removeItem(key));
+    [SAVE_KEY, V4_SAVE_KEY, V3_SAVE_KEY, V2_SAVE_KEY, LEGACY_SAVE_KEY].forEach((key) => localStorage.removeItem(key));
     setState(createInitialState(Date.now(), lang));
     setTab('house');
     setSatchelOpen(false);
@@ -253,9 +278,15 @@ export default function App() {
             onBegin={begin} onGuide={followGuide} onSkipGuidance={skipGuidance}
             onWork={() => setTab('work')} onKnowledge={() => setTab('knowledge')}
             onSatchel={() => setSatchelOpen(true)} onRepair={repairDesk}
+            onRestoreScriptorium={repairScriptorium} onQueueDailyPlan={queueNeed}
           />
         )}
-        {tab === 'work' && <Work state={state} lang={lang} now={visualNow} onSelect={(id) => setState((current) => selectActivity(current, id, Date.now()))} />}
+        {tab === 'work' && <Work
+          state={state} lang={lang} now={visualNow}
+          onSelect={(id) => setState((current) => selectActivity(current, id, Date.now()))}
+          onCancel={(index) => setState((current) => cancelQueuedActivity(current, index, Date.now()))}
+          onMove={(index, direction) => setState((current) => moveQueuedActivity(current, index, direction, Date.now()))}
+        />}
         {tab === 'knowledge' && <Knowledge state={state} lang={lang} onBuy={buySkill} />}
       </main>
 
@@ -270,7 +301,7 @@ export default function App() {
       )}
 
       <footer className="footer">
-        <span>{lang === 'ar' ? 'الكلمة الأولى · الإصدار ٠٫٣٫١' : 'The First Word · v0.3.1'}</span>
+        <span>{lang === 'ar' ? 'عمل اليوم · الإصدار ٠٫٤' : 'The Day’s Work · v0.4'}</span>
         {state.started && <button type="button" onClick={() => setComicReplay(true)}>{lang === 'ar' ? 'أعد المقدمة' : 'Replay opening'}</button>}
         <button type="button" onClick={resetSession}>{lang === 'ar' ? 'رحلة جديدة' : 'New journey'}</button>
       </footer>
@@ -282,9 +313,12 @@ export default function App() {
       {offline && (
         <Modal onClose={() => setOffline(null)}>
           <div className="modal-seal" aria-hidden="true">⌛</div><p className="eyebrow">{lang === 'ar' ? 'سجل العودة' : 'Return ledger'}</p>
-          <h2>{lang === 'ar' ? 'واصل الباحث عمله' : 'The researcher kept working'}</h2>
-          <p>{lang === 'ar' ? 'حُسب التقدم من الوقت المسجّل، لا من مرات تحديث الشاشة.' : 'Progress was calculated from recorded time, not screen refreshes.'}</p>
-          <div className="offline-rewards"><ResourceChip icon="✦" value={offline.knowledge} label={t.knowledge} prefix="+" />{offline.timber > 0 && <ResourceChip icon="▰" value={offline.timber} label={t.timber} prefix="+" />}{offline.stone > 0 && <ResourceChip icon="◆" value={offline.stone} label={t.stone} prefix="+" />}</div>
+          <h2>{lang === 'ar' ? `اكتملت ${offline.completions} من المهام` : `${offline.completions} queued task${offline.completions === 1 ? '' : 's'} completed`}</h2>
+          <p>{lang === 'ar' ? 'توقّف الباحث عندما انتهت الخطة أو واجهت المهمة التالية شرطاً ناقصاً.' : 'The researcher stopped when the plan ended or the next task met an unmet requirement.'}</p>
+          <div className="return-task-list">{offline.completedActivityIds.map((id, index) => <span key={`${id}-${index}`}>✓ {getActivity(id)?.name[lang] ?? id}</span>)}</div>
+          <div className="offline-rewards">{offline.knowledge !== 0 && <ResourceChip icon="✦" value={offline.knowledge} label={t.knowledge} prefix={offline.knowledge > 0 ? '+' : ''} />}{offline.timber > 0 && <ResourceChip icon="▰" value={offline.timber} label={t.timber} prefix="+" />}{offline.stone > 0 && <ResourceChip icon="◆" value={offline.stone} label={t.stone} prefix="+" />}</div>
+          {offline.darknessCleared > 0 && <p className="return-darkness">{lang === 'ar' ? `تراجع زحف الظلام ${offline.darknessCleared} نقطة.` : `Daily Darkness retreated by ${offline.darknessCleared}.`}</p>}
+          {offline.blockedActivityId && <p className="quiet">{lang === 'ar' ? `توقف الطابور عند: ${getActivity(offline.blockedActivityId)?.name.ar}.` : `The queue stopped at: ${getActivity(offline.blockedActivityId)?.name.en}.`}</p>}
           {offline.cappedMs > 0 && <p className="quiet">{lang === 'ar' ? 'بلغ الغياب الحد الأقصى: ٨ ساعات.' : 'Away-time reached the 8-hour cap.'}</p>}
           <button className="primary-button" type="button" onClick={() => setOffline(null)}>{lang === 'ar' ? 'عد إلى الدار' : 'Return to the House'}</button>
         </Modal>
@@ -294,9 +328,11 @@ export default function App() {
         <Modal onClose={() => setMigrationNotice(false)}>
           <div className="modal-seal" aria-hidden="true">✦</div><p className="eyebrow">{lang === 'ar' ? 'طريق أوضح' : 'A clearer path'}</p>
           <h2>{lang === 'ar' ? 'العتمة صارت لها غاية' : 'The Darkness now has a purpose'}</h2>
-          <p>{boot.fromVersion === 3
-            ? (lang === 'ar' ? 'حُفظ تقدمك السابق. أضيفت رواية أوضح وإرشاد اختياري ومقياس لظلام بغداد. يمكنك إعادة المقدمة من أسفل الدار.' : 'Your previous progress is preserved. The House now has clearer narration, optional guidance, and a city Darkness meter. You can replay the opening from the footer.')
-            : (lang === 'ar' ? 'تغيّرت القصة والاقتصاد جذرياً، لذلك تبدأ «الكلمة الأولى» من جديد مع الاحتفاظ باللغة.' : 'The story and economy changed substantially, so The First Word begins fresh while preserving your language choice.')}</p>
+          <p>{boot.fromVersion === 4
+            ? (lang === 'ar' ? 'حُفظ تقدمك. صار العمل طابوراً من ثلاث مهام، وفتح ترميم دار النسخ طريق أول حاجة يومية غير عقابية.' : 'Your progress is preserved. Work now uses a three-task queue, and restoring the Scriptorium opens the first non-punitive Daily Need.')
+            : boot.fromVersion === 3
+              ? (lang === 'ar' ? 'حُفظ تقدمك السابق. أضيفت رواية أوضح وإرشاد اختياري ومقياس لظلام بغداد وطابور عمل.' : 'Your previous progress is preserved. The House now has clearer narration, optional guidance, a city Darkness meter, and a work queue.')
+              : (lang === 'ar' ? 'تغيّرت القصة والاقتصاد جذرياً، لذلك تبدأ «الكلمة الأولى» من جديد مع الاحتفاظ باللغة.' : 'The story and economy changed substantially, so The First Word begins fresh while preserving your language choice.')}</p>
           <button className="primary-button" type="button" onClick={() => setMigrationNotice(false)}>{lang === 'ar' ? 'واصل الرحلة' : 'Continue the journey'}</button>
         </Modal>
       )}
@@ -311,6 +347,15 @@ export default function App() {
           <button className="primary-button" type="button" onClick={() => closeRestoration(true)}>{lang === 'ar' ? 'شاهد ما تتذكره الدار' : 'See what the House remembers'}</button>
         </Modal>
       )}
+
+      {scriptoriumNotice && (
+        <Modal onClose={() => setScriptoriumNotice(false)}>
+          <div className="modal-seal" aria-hidden="true">▤</div><p className="eyebrow">{lang === 'ar' ? 'ترميم دائم' : 'Permanent restoration'}</p>
+          <h2>{lang === 'ar' ? 'عادت دار النسخ إلى العمل' : 'The Scriptorium returns to use'}</h2>
+          <p>{lang === 'ar' ? 'انخفض ظلام الحملة إلى ٩٥٪. لكن الجهل يزحف اليوم بثلاث نقاط نحو مدرسة الشرق. تعلّم، واصنع، واخدم لتستعيد خط الترميم الدائم.' : 'Campaign Darkness falls permanently to 95%. But Ignorance has crept three points toward the eastern school today. Learn, Make, and Serve to return to that secured baseline.'}</p>
+          <button className="primary-button" type="button" onClick={() => { setScriptoriumNotice(false); queueNeed(); }}>{lang === 'ar' ? 'رتّب خطة اليوم' : 'Queue today’s plan'}</button>
+        </Modal>
+      )}
     </div>
   );
 }
@@ -321,11 +366,12 @@ function ResourceChip({ icon, value, label, prefix = '' }: { icon: string; value
 
 function DarknessMeter({ state, lang }: { state: GameState; lang: Language }) {
   const darkness = darknessPercent(state);
+  const campaign = campaignDarknessPercent(state);
   const light = 100 - darkness;
   return (
     <section className="darkness-meter" aria-label={`${darkness}% ${lang === 'ar' ? 'ظلام' : 'Darkness'}`}>
       <span className="darkness-seal" aria-hidden="true">◐</span>
-      <div><small>{state.ignoranceRevealed ? (lang === 'ar' ? 'قبضة الجهل' : 'Ignorance’s hold') : (lang === 'ar' ? 'ظلام بغداد' : 'Darkness over Baghdad')}</small><strong><bdi>{darkness}%</bdi></strong></div>
+      <div><small>{state.ignoranceRevealed ? (lang === 'ar' ? 'قبضة الجهل' : 'Ignorance’s hold') : (lang === 'ar' ? 'ظلام بغداد' : 'Darkness over Baghdad')}</small><strong><bdi>{darkness}%</bdi></strong>{state.scriptoriumRepaired && <em>{lang === 'ar' ? `خط الحملة ${campaign}% · زحف اليوم +${state.dailyEncroachment}` : `Campaign ${campaign}% · today +${state.dailyEncroachment}`}</em>}</div>
       <span className="darkness-track"><i style={{ width: `${light}%` }} /></span>
     </section>
   );
@@ -335,24 +381,25 @@ function MiniActivity({ state, lang, now, onOpen }: { state: GameState; lang: La
   const activity = getActivity(state.activeActivityId);
   const timing = activityTiming(state, now);
   if (!activity || !timing) return null;
-  return <button className="mini-activity" type="button" onClick={onOpen}><span><strong>{activity.name[lang]}</strong><small><bdi>{Math.ceil(timing.remainingMs / 1_000)}s</bdi></small></span><i><b style={{ width: `${timing.percent}%` }} /></i></button>;
+  return <button className="mini-activity" type="button" onClick={onOpen}><span><strong>{activity.name[lang]}</strong><small><bdi>{Math.ceil(timing.remainingMs / 1_000)}s</bdi> · {state.workQueue.length} {lang === 'ar' ? 'في الطابور' : 'queued'}</small></span><i><b style={{ width: `${timing.percent}%` }} /></i></button>;
 }
 
-function House({ state, lang, now, recommendation, memoriesExpanded, onToggleMemories, onBegin, onGuide, onSkipGuidance, onWork, onKnowledge, onSatchel, onRepair }: {
+function House({ state, lang, now, recommendation, memoriesExpanded, onToggleMemories, onBegin, onGuide, onSkipGuidance, onWork, onKnowledge, onSatchel, onRepair, onRestoreScriptorium, onQueueDailyPlan }: {
   state: GameState; lang: Language; now: number; recommendation: Destination; memoriesExpanded: boolean;
   onToggleMemories: () => void; onBegin: () => void; onGuide: () => void; onSkipGuidance: () => void;
   onWork: () => void; onKnowledge: () => void; onSatchel: () => void; onRepair: () => void;
+  onRestoreScriptorium: () => void; onQueueDailyPlan: () => void;
 }) {
   if (!state.started) return <OpeningComic lang={lang} onBegin={onBegin} />;
   return (
     <section className="house-screen screen-section">
-      <div className="section-heading compact-heading"><div><p className="eyebrow">{lang === 'ar' ? 'الفصل الأول' : 'Chapter One'}</p><h1>{lang === 'ar' ? 'الكلمة الأولى' : 'The First Word'}</h1></div><p>{lang === 'ar' ? 'لا يطلع الفجر على بغداد. أعد المعنى، وانشر المعرفة، وأعد النور.' : 'Dawn no longer comes to Baghdad. Restore meaning, circulate knowledge, and bring back the light.'}</p></div>
+      <div className="section-heading compact-heading"><div><p className="eyebrow">{state.prologueComplete ? (lang === 'ar' ? 'الفصل الثاني' : 'Chapter Two') : (lang === 'ar' ? 'الفصل الأول' : 'Chapter One')}</p><h1>{state.prologueComplete ? (lang === 'ar' ? 'عمل اليوم' : 'The Day’s Work') : (lang === 'ar' ? 'الكلمة الأولى' : 'The First Word')}</h1></div><p>{state.prologueComplete ? (lang === 'ar' ? 'تعلّم ما تحتاجه المدينة، واصنع استجابة نافعة، ثم ضعها في أيدي الناس.' : 'Learn what the city needs, make a useful response, then place it in people’s hands.') : (lang === 'ar' ? 'لا يطلع الفجر على بغداد. أعد المعنى، وانشر المعرفة، وأعد النور.' : 'Dawn no longer comes to Baghdad. Restore meaning, circulate knowledge, and bring back the light.')}</p></div>
       <HouseScene state={state} lang={lang} recommendation={recommendation} onGuide={onGuide} />
       {!state.tutorialSkipped && state.tutorialStep !== 'complete' && <button className="skip-guidance" type="button" onClick={onSkipGuidance}>{lang === 'ar' ? 'تخطَّ الإرشاد' : 'Skip guidance'}</button>}
       <div className="house-actions">
         <article className="action-panel current-work">
           <p className="eyebrow">{lang === 'ar' ? 'العمل الجاري' : 'Current work'}</p>
-          {state.activeActivityId ? <ActivityTimer state={state} activity={getActivity(state.activeActivityId)} lang={lang} now={now} /> : <p>{lang === 'ar' ? 'يشير الشبح إلى المخطوطة. ابدأ من هناك.' : 'The ghost is pointing toward the manuscript. Begin there.'}</p>}
+          {state.activeActivityId ? <ActivityTimer state={state} activity={getActivity(state.activeActivityId)} lang={lang} now={now} /> : <p>{state.scriptoriumRepaired ? (lang === 'ar' ? 'الطابور فارغ. رتّب عملاً نافعاً قبل أن تغادر.' : 'The queue is empty. Plan useful work before you leave.') : (lang === 'ar' ? 'يشير الشبح إلى المخطوطة. ابدأ من هناك.' : 'The ghost is pointing toward the manuscript. Begin there.')}</p>}
           <button className="secondary-button" type="button" onClick={state.tutorialStep === 'inspect-manuscript' ? onGuide : onWork}>{state.tutorialStep === 'inspect-manuscript' ? (lang === 'ar' ? 'افحص المخطوطة' : 'Inspect the manuscript') : (lang === 'ar' ? 'افتح العمل' : 'Open Work')}</button>
         </article>
         {!state.ghostIdentityRevealed ? (
@@ -361,6 +408,8 @@ function House({ state, lang, now, recommendation, memoriesExpanded, onToggleMem
             <button className="primary-button" type="button" onClick={recommendation === 'knowledge' ? onKnowledge : onWork}>{recommendation === 'knowledge' ? (lang === 'ar' ? 'افتح المعرفة' : 'Open Knowledge') : (lang === 'ar' ? 'واصل العمل' : 'Continue the work')}</button>
           </article>
         ) : <DeskRecipe state={state} lang={lang} onRepair={onRepair} onSatchel={onSatchel} repairable={canRepairDesk(state)} />}
+        {state.deskRepaired && <ScriptoriumProject state={state} lang={lang} onRestore={onRestoreScriptorium} />}
+        {state.scriptoriumRepaired && <DailyNeedCard state={state} lang={lang} onQueuePlan={onQueueDailyPlan} onOpenWork={onWork} />}
       </div>
       <HouseMemories state={state} lang={lang} expanded={memoriesExpanded} onToggle={onToggleMemories} />
     </section>
@@ -426,7 +475,7 @@ function HouseScene({ state, lang, recommendation, onGuide }: { state: GameState
           <button className="bubble-action" type="button" onClick={onGuide}>{guideButtonLabel(state, lang, recommendation)}<span aria-hidden="true">←</span></button>
         </div>
       )}
-      <span className="stage-label">{state.deskRepaired ? (lang === 'ar' ? 'المرحلة ١ · أول مصباح' : 'Stage 1 · The first lamp') : (lang === 'ar' ? 'المرحلة ٠ · ظلام بنسبة ١٠٠٪' : 'Stage 0 · 100% Darkness')}</span>
+      <span className="stage-label">{state.scriptoriumRepaired ? (state.schoolRelit ? (lang === 'ar' ? 'المرحلة ٢ · المدرسة مضاءة' : 'Stage 2 · The school is lit') : (lang === 'ar' ? 'المرحلة ٢ · دار النسخ' : 'Stage 2 · The Scriptorium')) : state.deskRepaired ? (lang === 'ar' ? 'المرحلة ١ · أول مصباح' : 'Stage 1 · The first lamp') : (lang === 'ar' ? 'المرحلة ٠ · ظلام بنسبة ١٠٠٪' : 'Stage 0 · 100% Darkness')}</span>
     </div>
   );
 }
@@ -442,26 +491,91 @@ function DeskRecipe({ state, lang, onRepair, onSatchel, repairable }: { state: G
   );
 }
 
+function ScriptoriumProject({ state, lang, onRestore }: { state: GameState; lang: Language; onRestore: () => void }) {
+  if (state.scriptoriumRepaired) return <article className="action-panel repaired-panel scriptorium-complete"><span className="panel-icon" aria-hidden="true">▤</span><div><p className="eyebrow">{lang === 'ar' ? 'المرساة الدائمة' : 'Permanent anchor'}</p><h2>{lang === 'ar' ? 'دار النسخ تعمل' : 'The Scriptorium is working'}</h2><p>{lang === 'ar' ? 'بقيت الأصول آمنة، وصار للنسخ طريق إلى المدينة. استقر ظلام الحملة عند ٩٥٪.' : 'Originals remain safe and copies now have a path into the city. Campaign Darkness is secured at 95%.'}</p></div></article>;
+  return (
+    <article id="scriptorium-project" className="action-panel desk-recipe scriptorium-project">
+      <div><p className="eyebrow">{lang === 'ar' ? 'مشروع ترميم دائم' : 'Permanent restoration project'}</p><h2>{lang === 'ar' ? 'دار النسخ' : 'The Scriptorium'}</h2><p>{lang === 'ar' ? 'رمّم موضعاً يحفظ الأصول ويصنع نسخاً تحمل المعرفة إلى من يحتاجها.' : 'Restore a place that protects originals and makes copies for people who need them.'}</p></div>
+      <div className="requirements"><Requirement icon="✦" current={state.knowledge} required={scriptoriumRequirements.knowledge} label={ui[lang].knowledge} /><Requirement icon="▰" current={state.materials.timber} required={scriptoriumRequirements.timber} label={ui[lang].timber} /><Requirement icon="◆" current={state.materials.stone} required={scriptoriumRequirements.stone} label={ui[lang].stone} /></div>
+      <button className="primary-button" type="button" disabled={!canRestoreScriptorium(state)} onClick={onRestore}>{canRestoreScriptorium(state) ? (lang === 'ar' ? 'رمّم دار النسخ' : 'Restore the Scriptorium') : (lang === 'ar' ? 'اجمع المتطلبات' : 'Gather requirements')}</button>
+    </article>
+  );
+}
+
+function DailyNeedCard({ state, lang, onQueuePlan, onOpenWork }: { state: GameState; lang: Language; onQueuePlan: () => void; onOpenWork: () => void }) {
+  const steps = lang === 'ar'
+    ? ['تعلّم · فكّ رموز الكرّاس', 'اصنع · انسخ الأصل', 'اخدم · أوصل النسخة']
+    : ['Learn · Decipher the primer', 'Make · Copy the original', 'Serve · Deliver the copy'];
+  if (!state.dailyNeedId) return (
+    <article className="action-panel daily-need resolved">
+      <span className="panel-icon" aria-hidden="true">✦</span><div><p className="eyebrow">{lang === 'ar' ? 'حاجة اليوم مكتملة' : 'Today’s need resolved'}</p><h2>{lang === 'ar' ? 'عاد مصباح مدرسة الشرق' : 'The eastern school is relit'}</h2><p>{lang === 'ar' ? 'عاد ظلام اليوم إلى خط الحملة الدائم. لا يتراكم عمل جديد حتى عودتك في يوم لاحق.' : 'Today’s Darkness has returned to the permanent campaign baseline. No new work stacks before a later return.'}</p></div>
+    </article>
+  );
+  const canQueuePlan = state.dailyNeedStep === 0 && state.workQueue.length === 0;
+  return (
+    <article className="action-panel daily-need">
+      <div><p className="eyebrow">{lang === 'ar' ? 'حاجة اليوم · مدرسة الشرق' : 'Today’s need · Eastern school'}</p><h2>{lang === 'ar' ? 'الكرّاس الذي أكلته العتمة' : 'The primer the Darkness ate'}</h2><p>{lang === 'ar' ? 'أغلق الجهل طريق القراءة. أكمل سلسلة واحدة لتزيل نقاط الزحف الثلاث.' : 'Ignorance has closed a path to reading. Complete one linked chain to clear all three encroachment points.'}</p></div>
+      <ol className="daily-steps">{steps.map((step, index) => <li className={index < state.dailyNeedStep ? 'complete' : index === state.dailyNeedStep ? 'current' : ''} key={step}><span>{index < state.dailyNeedStep ? '✓' : index + 1}</span><strong>{step}</strong></li>)}</ol>
+      <div className="encroachment-pips" aria-label={`${state.dailyEncroachment} ${lang === 'ar' ? 'نقاط زحف متبقية' : 'encroachment points remain'}`}>{[0, 1, 2].map((index) => <i className={index < state.dailyEncroachment ? 'active' : ''} key={index} />)}<strong><bdi>{state.dailyEncroachment}</bdi> / 3</strong></div>
+      <button className="primary-button" type="button" onClick={canQueuePlan ? onQueuePlan : onOpenWork}>{canQueuePlan ? (lang === 'ar' ? 'رتّب خطة اليوم' : 'Queue today’s plan') : (lang === 'ar' ? 'افتح طابور العمل' : 'Open the work queue')}</button>
+      {state.dailyNeedStep === 0 && state.workQueue.length > 0 && <p className="quiet">{lang === 'ar' ? 'أفرغ الطابور أولاً لإضافة الخطة كاملة.' : 'Finish or clear the queue to add the complete plan.'}</p>}
+    </article>
+  );
+}
+
 function Requirement({ icon, current, required, label }: { icon: string; current: number; required: number; label: string }) {
   const complete = current + Number.EPSILON >= required;
   return <span className={complete ? 'complete' : ''}><i aria-hidden="true">{complete ? '✓' : icon}</i><bdi>{formatResource(Math.min(current, required))}/{required}</bdi><small>{label}</small></span>;
 }
 
-function Work({ state, lang, now, onSelect }: { state: GameState; lang: Language; now: number; onSelect: (id: string) => void }) {
-  const study = activities.filter((activity) => activity.kind === 'study');
+function Work({ state, lang, now, onSelect, onCancel, onMove }: { state: GameState; lang: Language; now: number; onSelect: (id: string) => void; onCancel: (index: number) => void; onMove: (index: number, direction: -1 | 1) => void }) {
+  const study = activities.filter((activity) => activity.kind === 'study' && activity.dailyStep === undefined);
   const salvage = activities.filter((activity) => activity.kind === 'salvage');
+  const daily = activities.filter((activity) => activity.dailyStep !== undefined);
   return (
     <section className="work-screen screen-section">
-      <div className="section-heading"><div><p className="eyebrow">{lang === 'ar' ? 'اقرأ · افهم · اصنع' : 'Read · understand · make'}</p><h1>{lang === 'ar' ? 'العمل' : 'Work'}</h1></div><p>{lang === 'ar' ? 'كل محطة تحول الفهم إلى عمل. يستمر النشاط المختار تلقائياً حتى تختار غيره.' : 'Each station turns understanding into action. Your selected activity repeats until you choose another.'}</p></div>
-      <div className="active-work-card"><p className="eyebrow">{lang === 'ar' ? 'العمل الجاري' : 'Current work'}</p><ActivityTimer state={state} activity={getActivity(state.activeActivityId)} lang={lang} now={now} large /></div>
+      <div className="section-heading"><div><p className="eyebrow">{lang === 'ar' ? 'تعلّم · اصنع · اخدم' : 'Learn · Make · Serve'}</p><h1>{lang === 'ar' ? 'طابور العمل' : 'Work queue'}</h1></div><p>{lang === 'ar' ? 'رتّب حتى ثلاث مهام. تُنجز بالترتيب، حتى أثناء غيابك، ثم تتوقف.' : 'Plan up to three tasks. They finish in order, including while you are away, and then stop.'}</p></div>
+      <QueueBoard state={state} lang={lang} now={now} onCancel={onCancel} onMove={onMove} />
+      {state.scriptoriumRepaired && <ActivityGroup title={lang === 'ar' ? 'حاجة اليوم' : 'Today’s need'} note={lang === 'ar' ? 'كل خطوة مكتملة تزيل نقطة واحدة من زحف الظلام.' : 'Each completed step clears one point of encroaching Darkness.'} activities={daily} state={state} lang={lang} onSelect={onSelect} />}
       <ActivityGroup title={lang === 'ar' ? 'مكتب المخطوطات' : 'Manuscript Desk'} note={lang === 'ar' ? 'استعد صوت الحارس طبقة بعد طبقة.' : 'Restore the guardian’s voice one layer at a time.'} activities={study} state={state} lang={lang} onSelect={onSelect} />
       <ActivityGroup title={lang === 'ar' ? 'زاوية الإنقاذ' : 'Salvage Corner'} note={state.ghostIdentityRevealed ? (lang === 'ar' ? 'استخرج ما يحتاجه مكتب القيّم.' : 'Recover what the Keeper’s Desk requires.') : (lang === 'ar' ? 'اكشف هوية الحارس لفتح أعمال الإنقاذ.' : 'Reveal the guardian’s identity to unlock salvage work.')} activities={salvage} state={state} lang={lang} onSelect={onSelect} />
     </section>
   );
 }
 
+function QueueBoard({ state, lang, now, onCancel, onMove }: { state: GameState; lang: Language; now: number; onCancel: (index: number) => void; onMove: (index: number, direction: -1 | 1) => void }) {
+  return (
+    <section className="queue-board" aria-label={lang === 'ar' ? 'طابور العمل، ثلاث خانات' : 'Work queue, three slots'}>
+      <header><div><p className="eyebrow">{lang === 'ar' ? 'الخطة الجارية' : 'Current plan'}</p><h2>{lang === 'ar' ? `${state.workQueue.length} من 3 مهام` : `${state.workQueue.length} of 3 tasks`}</h2></div><span>{lang === 'ar' ? 'يستمر حتى ٨ ساعات أثناء الغياب' : 'Runs for up to 8 hours away'}</span></header>
+      <ol>
+        {[0, 1, 2].map((index) => {
+          const entry = state.workQueue[index];
+          const activity = getActivity(entry?.activityId ?? null);
+          if (!activity) return <li className="queue-slot empty" key={index}><span>{index + 1}</span><p>{lang === 'ar' ? 'خانة فارغة' : 'Empty slot'}</p></li>;
+          return (
+            <li className={`queue-slot ${index === 0 ? 'running' : ''}`} key={`${entry.activityId}-${index}`}>
+              <span>{index === 0 ? '▶' : index + 1}</span>
+              <div><small>{purposeLabel(activity.purpose, lang)}</small><strong>{activity.name[lang]}</strong>{index === 0 && <ActivityTimer state={state} activity={activity} lang={lang} now={now} />}</div>
+              <div className="queue-controls">
+                <button type="button" disabled={index === 0} onClick={() => onMove(index, -1)} aria-label={lang === 'ar' ? `قدّم ${activity.name.ar}` : `Move ${activity.name.en} earlier`}>↑</button>
+                <button type="button" disabled={index === 0 || index === state.workQueue.length - 1} onClick={() => onMove(index, 1)} aria-label={lang === 'ar' ? `أخّر ${activity.name.ar}` : `Move ${activity.name.en} later`}>↓</button>
+                <button type="button" disabled={index === 0} onClick={() => onCancel(index)} aria-label={lang === 'ar' ? `ألغِ ${activity.name.ar}` : `Cancel ${activity.name.en}`}>×</button>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
+function purposeLabel(purpose: Activity['purpose'], lang: Language) {
+  const labels = { learn: { en: 'Learn', ar: 'تعلّم' }, make: { en: 'Make', ar: 'اصنع' }, serve: { en: 'Serve', ar: 'اخدم' } };
+  return labels[purpose][lang];
+}
+
 function ActivityGroup({ title, note, activities: group, state, lang, onSelect }: { title: string; note: string; activities: Activity[]; state: GameState; lang: Language; onSelect: (id: string) => void }) {
-  return <section className="activity-group"><header><h2>{title}</h2><p>{note}</p></header><div className="activity-grid">{group.map((activity) => <ActivityCard key={activity.id} activity={activity} state={state} lang={lang} selected={state.activeActivityId === activity.id} onSelect={() => onSelect(activity.id)} />)}</div></section>;
+  return <section className="activity-group"><header><h2>{title}</h2><p>{note}</p></header><div className="activity-grid">{group.map((activity) => <ActivityCard key={activity.id} activity={activity} state={state} lang={lang} queued={state.workQueue.filter((entry) => entry.activityId === activity.id).length} onSelect={() => onSelect(activity.id)} />)}</div></section>;
 }
 
 function ActivityTimer({ state, activity, lang, now, large = false }: { state: GameState; activity: Activity | null; lang: Language; now: number; large?: boolean }) {
@@ -471,13 +585,15 @@ function ActivityTimer({ state, activity, lang, now, large = false }: { state: G
   const firstDiscovery = state.tutorialStep === 'first-reward' && activity.id === 'trace-letters';
   const knowledgeReward = activity.knowledge * knowledgeMultiplier(state, activity.discipline) + (firstDiscovery ? 7 : 0);
   const xpReward = activity.xp + (firstDiscovery ? 4 : 0);
-  return <div className={`activity-timer ${large ? 'large' : ''}`}><div><strong>{activity.name[lang]}</strong><span><bdi>{formatDuration(activity.durationMs)}</bdi> · <bdi>{Math.max(0, Math.ceil(timing.remainingMs / 1_000))}s</bdi> {ui[lang].remaining}</span></div><div className="timer-track"><i style={{ width: `${timing.percent}%` }} /></div><div className="timer-rewards"><span><bdi>+{formatResource(knowledgeReward)}</bdi> ✦</span><span><bdi>+{xpReward}</bdi> XP</span>{firstDiscovery && <span>{lang === 'ar' ? 'مكافأة الاكتشاف الأول' : 'First discovery bonus'}</span>}{activity.timber ? <span><bdi>+{activity.timber}</bdi> ▰</span> : null}{activity.stone ? <span><bdi>+{activity.stone}</bdi> ◆</span> : null}</div></div>;
+  return <div className={`activity-timer ${large ? 'large' : ''}`}><div><strong>{activity.name[lang]}</strong><span><bdi>{formatDuration(activity.durationMs)}</bdi> · <bdi>{Math.max(0, Math.ceil(timing.remainingMs / 1_000))}s</bdi> {ui[lang].remaining}</span></div><div className="timer-track"><i style={{ width: `${timing.percent}%` }} /></div><div className="timer-rewards">{activity.knowledgeCost ? <span><bdi>−{activity.knowledgeCost}</bdi> ✦</span> : <span><bdi>+{formatResource(knowledgeReward)}</bdi> ✦</span>}<span><bdi>+{xpReward}</bdi> XP</span>{activity.rewardsItem && <span>{lang === 'ar' ? 'ينتج نسخة' : 'Creates a copy'}</span>}{activity.dailyStep !== undefined && <span>{lang === 'ar' ? 'يزيل ١ زحف' : 'Clears 1 Darkness'}</span>}{firstDiscovery && <span>{lang === 'ar' ? 'مكافأة الاكتشاف الأول' : 'First discovery bonus'}</span>}{activity.timber ? <span><bdi>+{activity.timber}</bdi> ▰</span> : null}{activity.stone ? <span><bdi>+{activity.stone}</bdi> ◆</span> : null}</div></div>;
 }
 
-function ActivityCard({ activity, state, lang, selected, onSelect }: { activity: Activity; state: GameState; lang: Language; selected: boolean; onSelect: () => void }) {
+function ActivityCard({ activity, state, lang, queued, onSelect }: { activity: Activity; state: GameState; lang: Language; queued: number; onSelect: () => void }) {
   const available = activityAvailable(state, activity);
-  const reason = !available ? activity.requiresIdentity && !state.ghostIdentityRevealed ? (lang === 'ar' ? 'اكشف هوية الحارس' : 'Reveal the guardian') : (lang === 'ar' ? `المستوى ${activity.minLevel}` : `Level ${activity.minLevel}`) : '';
-  return <button className={`activity-card ${selected ? 'selected' : ''} ${available ? '' : 'locked'}`} type="button" disabled={!available || selected} onClick={onSelect}><span className="activity-icon" aria-hidden="true">{activity.kind === 'study' ? 'ا' : activity.timber ? '▰' : '◆'}</span><span className="activity-copy"><strong>{activity.name[lang]}</strong><small>{activity.description[lang]}</small></span><span className="activity-meta"><bdi>{formatDuration(activity.durationMs)}</bdi><small><bdi>+{formatResource(activity.knowledge)}</bdi> ✦ · <bdi>+{activity.xp}</bdi> XP</small></span><span className="activity-state">{selected ? ui[lang].active : available ? ui[lang].select : reason}</span></button>;
+  const queueFull = state.workQueue.length >= 3;
+  const reason = !available ? activity.requiresScriptorium && !state.scriptoriumRepaired ? (lang === 'ar' ? 'رمّم دار النسخ' : 'Restore the Scriptorium') : activity.dailyStep !== undefined ? (lang === 'ar' ? 'أكمل الخطوة السابقة' : 'Complete the previous step') : activity.requiresIdentity && !state.ghostIdentityRevealed ? (lang === 'ar' ? 'اكشف هوية الحارس' : 'Reveal the guardian') : (lang === 'ar' ? `المستوى ${activity.minLevel}` : `Level ${activity.minLevel}`) : queueFull ? (lang === 'ar' ? 'الطابور ممتلئ' : 'Queue full') : '';
+  const reward = activity.knowledgeCost ? `−${activity.knowledgeCost} ✦ · +${activity.xp} XP` : `+${formatResource(activity.knowledge)} ✦ · +${activity.xp} XP`;
+  return <button className={`activity-card ${queued > 0 ? 'selected' : ''} ${available ? '' : 'locked'}`} type="button" disabled={!available || queueFull} onClick={onSelect}><span className={`activity-icon purpose-${activity.purpose}`} aria-hidden="true">{activity.purpose === 'learn' ? 'ا' : activity.purpose === 'make' ? '⚒' : '✦'}</span><span className="activity-copy"><small className="purpose-tag">{purposeLabel(activity.purpose, lang)}</small><strong>{activity.name[lang]}</strong><small>{activity.description[lang]}</small></span><span className="activity-meta"><bdi>{formatDuration(activity.durationMs)}</bdi><small><bdi>{reward}</bdi></small></span><span className="activity-state">{available && !queueFull ? (queued > 0 ? `${ui[lang].select} · ${queued}` : ui[lang].select) : reason}</span></button>;
 }
 
 function Knowledge({ state, lang, onBuy }: { state: GameState; lang: Language; onBuy: (skill: LanguageSkill) => void }) {
@@ -506,12 +622,15 @@ function HouseMemories({ state, lang, expanded, onToggle }: { state: GameState; 
     { open: true, number: '01', title: { en: 'The City without Dawn', ar: 'المدينة بلا فجر' }, text: { en: 'Baghdad is covered by a Darkness that never lifts. The ruined House may be the first place from which light can return.', ar: 'يغطي بغداد ظلام لا ينقشع. قد تكون الدار المهدّمة أول موضع يعود منه النور.' } },
     { open: state.ghostIdentityRevealed, number: '02', title: { en: 'A Name in the Margin', ar: 'اسم في الهامش' }, text: { en: 'The guardian is Al-Jahiz: writer, observer, and apparently an enemy of dignified silence.', ar: 'الحارس هو الجاحظ: كاتب ومراقب، ويبدو أنه عدو للصمت الوقور.' } },
     { open: state.prologueComplete, number: '03', title: { en: 'Ignorance Given Weight', ar: 'الجهل وقد صار له وزن' }, text: { en: 'The Darkness is Ignorance made physical. It separates minds, books, and ideas; circulating knowledge pushes it back.', ar: 'العتمة هي الجهل وقد صار مادياً. يفصل العقول والكتب والأفكار، ونشر المعرفة يدفعه إلى الوراء.' } },
+    { open: state.scriptoriumRepaired, number: '04', title: { en: 'The Scriptorium Returns', ar: 'عودة دار النسخ' }, text: { en: 'The House now protects original manuscripts while their copies carry knowledge beyond its walls.', ar: 'تحمي الدار الآن أصول المخطوطات بينما تحمل نسخها المعرفة إلى خارج جدرانها.' } },
+    { open: state.lastDailyResolvedOn !== null, number: '05', title: { en: 'The First Service', ar: 'أول خدمة' }, text: { en: 'A copied primer returned reading, voices, and one local lamp to the eastern school.', ar: 'أعادت نسخة الكرّاس القراءة والأصوات ومصباحاً محلياً إلى مدرسة الشرق.' } },
   ];
   return (
     <section id="house-memories" className="memories-section">
       <button className="memories-heading" type="button" onClick={onToggle} aria-expanded={expanded}><span><small>{lang === 'ar' ? 'سجل القصة' : 'Story record'}</small><strong>{lang === 'ar' ? 'ما تتذكره الدار' : 'What the House Remembers'}</strong></span><b aria-hidden="true">{expanded ? '−' : '+'}</b></button>
       {expanded && <div className="journal-list">{entries.map((entry) => <article key={entry.number} className={entry.open ? 'open' : 'sealed'}><span>{entry.number}</span><div><p className="eyebrow">{entry.open ? (lang === 'ar' ? 'مستعاد' : 'Recovered') : (lang === 'ar' ? 'ممحو' : 'Erased')}</p><h2>{entry.open ? entry.title[lang] : '••••••••'}</h2><p>{entry.open ? entry.text[lang] : (lang === 'ar' ? 'أعد المزيد من ذاكرة الدار.' : 'Restore more of the House’s memory.')}</p></div></article>)}</div>}
-      {expanded && state.prologueComplete && <article className="chapter-end"><p className="eyebrow">{lang === 'ar' ? 'نهاية المقدمة' : 'End of the prologue'}</p><h2>{lang === 'ar' ? 'لم تُهجر الدار. لقد أُسكتت.' : 'The House was not abandoned. It was silenced.'}</h2><p>{lang === 'ar' ? 'عاد مصباح واحد. لاستعادة المدينة، يجب أن تنتقل المعرفة من يد إلى يد.' : 'One lamp has returned. To restore the city, knowledge must move from hand to hand.'}</p><DarknessMeter state={state} lang={lang} /></article>}
+      {expanded && state.prologueComplete && !state.scriptoriumRepaired && <article className="chapter-end"><p className="eyebrow">{lang === 'ar' ? 'نهاية المقدمة' : 'End of the prologue'}</p><h2>{lang === 'ar' ? 'لم تُهجر الدار. لقد أُسكتت.' : 'The House was not abandoned. It was silenced.'}</h2><p>{lang === 'ar' ? 'عاد مصباح واحد. لاستعادة المدينة، يجب أن تنتقل المعرفة من يد إلى يد.' : 'One lamp has returned. To restore the city, knowledge must move from hand to hand.'}</p><DarknessMeter state={state} lang={lang} /></article>}
+      {expanded && state.lastDailyResolvedOn !== null && <article className="chapter-end"><p className="eyebrow">{lang === 'ar' ? 'الفصل الثاني' : 'Chapter Two'}</p><h2>{lang === 'ar' ? 'غادرت المعرفة جدران الدار.' : 'Knowledge has left the House.'}</h2><p>{lang === 'ar' ? 'بقي الأصل محفوظاً، ووصلت النسخة إلى من يحتاجها. هكذا يعود نور بغداد: حاجة بعد حاجة.' : 'The original remained safe and its copy reached the people who needed it. This is how Baghdad returns: one need at a time.'}</p><DarknessMeter state={state} lang={lang} /></article>}
     </section>
   );
 }

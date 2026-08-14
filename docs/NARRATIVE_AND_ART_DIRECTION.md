@@ -1,6 +1,6 @@
 # Narrative and Art Direction
 
-Status: approved v0.3.1 direction implemented. Focused human validation of the clearer tutorial and permanent-Darkness premise remains open.
+Status: approved direction implemented through the first v0.4 Daily Need. Focused human validation of the queue and daily-pressure premise remains open.
 
 ## Creative premise
 
@@ -114,7 +114,9 @@ No manuscript-copying economy, mining, full market, city traversal, or battle sy
 
 ## Core progression loop
 
-Decode a message -> understand a need -> study the required discipline -> salvage or obtain materials -> craft or repair -> restore part of the House -> attract people back -> weaken a Shadow -> recover a memory.
+A need appears → Learn what is needed → Make a useful response → Serve a person or district → clear today’s encroaching Darkness → invest the surplus to Restore permanently → unlock new needs, disciplines, people, and stories.
+
+Learn, Make, Serve, and Restore describe why a task matters; disciplines describe how the researcher can approach it. See [CORE_GAME_LOOP.md](CORE_GAME_LOOP.md) for the queue, Daily Need, and Darkness rules.
 
 ## Knowledge progression
 
@@ -161,6 +163,8 @@ Restoration changes both spaces:
 - each Shadow alters the district's colour, weather, and activity
 
 This communicates social impact without requiring free city exploration.
+
+The district also provides one authored Daily Need at a time. These are small human consequences of the current Shadow—a school without a readable primer, a well measured incorrectly, a remedy missing from an infirmary—not generic chores. Completing its Learn, Make, and Serve chain temporarily clears the day’s encroachment; major House and civic restorations permanently lower the Campaign Darkness baseline. Missed days never stack or undo the city’s recovery.
 
 ## Visual identity
 
